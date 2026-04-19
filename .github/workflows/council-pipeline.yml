@@ -1,0 +1,44 @@
+name: Neuro Council Weekly Pipeline
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Override topic'
+        required: false
+      publish_mode:
+        description: 'publish or draft'
+        required: false
+        default: 'draft'
+
+jobs:
+  council:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install anthropic requests
+      - name: Run Neuro Council Engine
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+          WP_URL: ${{ secrets.WP_URL }}
+          WP_USERNAME: ${{ secrets.WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MANUAL_TOPIC: ${{ github.event.inputs.topic }}
+          PUBLISH_MODE: ${{ github.event.inputs.publish_mode || 'draft' }}
+        run: python council_engine.py
+      - name: Commit output
+        run: |
+          git config user.name "Neuro Council Bot"
+          git config user.email "council@drwasifmalik.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "Council output $(date '+%Y-%m-%d')"
+          git push || true
