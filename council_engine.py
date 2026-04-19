@@ -6,7 +6,6 @@ Claude + Grok automated neuroscience publishing pipeline
 """
 
 import os
-import json
 import requests
 import re
 import time
@@ -21,7 +20,7 @@ WP_PASS        = os.environ.get('WP_APP_PASSWORD', '')
 TG_TOKEN       = os.environ.get('TELEGRAM_BOT_TOKEN', '')
 TG_CHAT        = os.environ.get('TELEGRAM_CHAT_ID', '')
 MANUAL_TOPIC   = os.environ.get('MANUAL_TOPIC', '')
-CONTENT_TYPE   = os.environ.get('CONTENT_TYPE', 'patient_guide')   # default lighter
+CONTENT_TYPE   = os.environ.get('CONTENT_TYPE', 'patient_guide')
 PUBLISH_MODE   = os.environ.get('PUBLISH_MODE', 'draft')
 
 AUTHOR_BRAND = "Dr. Wasif Rizwan Malik | MBBS, FCPS (Neurosurgery) | PMDC 47983-P | Consultant Neurosurgeon, Faraz Hospital, Dubai Mahal Chowk, Bahawalpur"
@@ -73,7 +72,7 @@ Style: Authoritative but accessible. Evidence-based. Patient-friendly where need
 Always include:
 - Full author byline: {AUTHOR_BRAND}
 - Consultation CTA: {CLINIC_CTA}
-- Educational disclaimer"""
+- Educational disclaimer: Educational content only. Consult your neurosurgeon for specific advice."""
 
     prompt = f"""Create a complete content package for: **{topic}**{research}{seo}
 
@@ -84,7 +83,7 @@ Deliver in clear sections:
 4. YouTube Video Script Outline (~600 words)
 5. CME Summary for doctors (evidence-graded, ~300 words)
 
-Use natural medical tone. Cite recent evidence where possible."""
+Use natural medical tone."""
 
     # Retry logic with higher timeout
     for attempt in range(3):
@@ -98,12 +97,12 @@ Use natural medical tone. Cite recent evidence where possible."""
                     'Content-Type': 'application/json'
                 },
                 json={
-                    'model': 'claude-3-5-sonnet-20241022',   # Stable & reliable model
+                    'model': 'claude-3-5-sonnet-20241022',   # Stable model
                     'max_tokens': 4096,
                     'system': system,
                     'messages': [{'role': 'user', 'content': prompt}]
                 },
-                timeout=180   # 3 minutes - should be enough
+                timeout=180   # 3 minutes
             )
 
             if r.status_code == 200:
@@ -111,17 +110,17 @@ Use natural medical tone. Cite recent evidence where possible."""
                 print(f"✅ Claude successfully generated {len(content.split())} words")
                 return content
             else:
-                print(f"❌ Claude API error {r.status_code}: {r.text[:200]}")
+                print(f"❌ Claude API error {r.status_code}")
 
         except requests.exceptions.ReadTimeout:
-            print(f"⏳ Read timeout on attempt {attempt+1}. Retrying...")
+            print(f"⏳ Read timeout on attempt {attempt+1}. Retrying in 12 seconds...")
             time.sleep(12)
             continue
         except Exception as e:
             print(f"❌ Unexpected error: {e}")
             break
 
-    raise RuntimeError("❌ Claude failed after 3 attempts. Check API key or Anthropic status.")
+    raise RuntimeError("❌ Claude failed after 3 attempts.")
 
 def publish_wp(title, content, status='draft', tags=None):
     if not all([WP_URL, WP_USER, WP_PASS]):
@@ -151,7 +150,7 @@ def publish_wp(title, content, status='draft', tags=None):
             print(f"✅ Published to WordPress: {data.get('link', 'No link')}")
             return {'id': data.get('id'), 'url': data.get('link', '')}
         else:
-            print(f"❌ WordPress error {r.status_code}: {r.text[:200]}")
+            print(f"❌ WordPress error {r.status_code}")
     except Exception as e:
         print(f"❌ WP publish error: {e}")
     return None
@@ -190,10 +189,8 @@ def main():
     print(f"📌 Topic: {topic}")
     print(f"🎯 Pillar: {pillar}")
 
-    # Step 1: Grok Research
     grok_brief = grok_research(topic)
 
-    # Step 2: Claude Generation
     try:
         content = claude_generate(topic, pillar, keywords, grok_brief)
     except Exception as e:
@@ -217,7 +214,7 @@ def main():
     notify_tg(topic, result, wc)
 
     print("\n" + "=" * 70)
-    print("✅ NEURO COUNCIL SESSION COMPLETED SUCCESSFULLY")
+    print("✅ NEURO COUNCIL SESSION COMPLETED")
     print("=" * 70)
 
 if __name__ == '__main__':
