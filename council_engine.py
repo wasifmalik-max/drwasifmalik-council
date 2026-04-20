@@ -8,7 +8,7 @@ import os, requests, re, time
 from datetime import datetime
 
 CLAUDE_KEY   = os.environ.get('ANTHROPIC_API_KEY', '')
-GROK_KEY     = os.environ.get('GROK_API_KEY', '')h
+GROK_KEY     = os.environ.get('GROK_API_KEY', '')
 WP_URL       = os.environ.get('WP_URL', 'https://drwasifmalik.com')
 WP_USER      = os.environ.get('WP_USERNAME', '')
 WP_PASS      = os.environ.get('WP_APP_PASSWORD', '')
