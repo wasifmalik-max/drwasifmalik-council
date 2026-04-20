@@ -1,5 +1,173 @@
 #!/usr/bin/env python3
 """
+THE NEURO COUNCIL v2.2 FINAL
+Dr. Wasif Rizwan Malik | PMDC 47983-P | drwasifmalik.com
+FIXES: WP username slug, model fallback, auth verify, sys.exit on fail
+"""
+import os, re, time, sys
+import requests
+from requests.auth import HTTPBasicAuth
+from datetime import datetime
+
+CLAUDE_KEY   = os.environ.get('ANTHROPIC_API_KEY', '')
+GROK_KEY     = os.environ.get('GROK_API_KEY', '')
+WP_URL       = os.environ.get('WP_URL', 'https://drwasifmalik.com')
+WP_USER      = os.environ.get('WP_USERNAME', '')
+WP_PASS      = os.environ.get('WP_APP_PASSWORD', '')
+TG_TOKEN     = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+TG_CHAT      = os.environ.get('TELEGRAM_CHAT_ID', '')
+MANUAL_TOPIC = os.environ.get('MANUAL_TOPIC', '')
+PUBLISH_MODE = os.environ.get('PUBLISH_MODE', 'draft')
+
+AUTHOR = "Dr. Wasif Rizwan Malik | MBBS, FCPS (Neurosurgery) | PMDC 47983-P | Consultant Neurosurgeon, Faraz Hospital, Dubai Mahal Chowk, Bahawalpur"
+CTA    = "Book Consultation: WhatsApp +923458254232 | Faraz Hospital, Bahawalpur"
+
+MODELS = [
+    "claude-sonnet-4-20250514",
+    "claude-sonnet-4",
+    "claude-3-7-sonnet-20250219",
+    "claude-3-5-sonnet-20241022",
+]
+
+TOPICS = [
+    {"t": "Lumbar disc herniation: when to operate and when to wait", "k": "lumbar disc slipped disc back surgery Pakistan"},
+    {"t": "Brain tumour diagnosis: the headache you must not ignore", "k": "brain tumour symptoms brain cancer Pakistan"},
+    {"t": "Cervical myelopathy: the silent killer of hand function", "k": "cervical myelopathy neck surgery hand weakness"},
+    {"t": "Epilepsy surgery: when medications fail", "k": "epilepsy surgery refractory epilepsy"},
+    {"t": "Brain aneurysm: the worst headache of your life explained", "k": "brain aneurysm subarachnoid haemorrhage"},
+    {"t": "Carpal tunnel syndrome: the wrist problem explained", "k": "carpal tunnel wrist pain hand numbness"},
+    {"t": "Hydrocephalus in adults: the treatable cause of dementia", "k": "hydrocephalus water on brain VP shunt"},
+    {"t": "Intraoperative CT: how BodyTom changed surgical precision", "k": "intraoperative CT BodyTom brain imaging"},
+    {"t": "Pituitary adenoma: the tumour hiding behind hormonal chaos", "k": "pituitary tumour endonasal surgery"},
+    {"t": "Parkinson disease: from diagnosis to deep brain stimulation", "k": "Parkinson disease Pakistan DBS tremor"},
+    {"t": "CVST: the stroke that strikes young women after childbirth", "k": "CVST cerebral venous sinus thrombosis"},
+    {"t": "Bell palsy: complete recovery is possible", "k": "Bell palsy facial nerve facial palsy"},
+    {"t": "Awake craniotomy: why we operate on the conscious brain", "k": "awake craniotomy brain mapping surgery"},
+    {"t": "Glioblastoma 2025: new treatments changing the prognosis", "k": "glioblastoma GBM treatment 2025"},
+    {"t": "Trigeminal neuralgia: the most painful condition known to medicine", "k": "trigeminal neuralgia MVD surgery"},
+    {"t": "Myelomeningocele: what parents need to know from day one", "k": "myelomeningocele spina bifida"},
+    {"t": "AI in neurosurgery: promise, reality, and caution", "k": "AI neurosurgery machine learning brain"},
+    {"t": "Spinal cord injury: what neuroscience offers in 2025", "k": "spinal cord injury SCI rehab"},
+]
+
+def get_topic():
+    if MANUAL_TOPIC: return {"t": MANUAL_TOPIC, "k": MANUAL_TOPIC}
+    return TOPICS[datetime.now().isocalendar()[1] % len(TOPICS)]
+
+def verify_wp():
+    if not all([WP_URL, WP_USER, WP_PASS]):
+        return False, f"Missing: URL={bool(WP_URL)} USER={bool(WP_USER)} PASS={bool(WP_PASS)}"
+    try:
+        r = requests.get(f"{WP_URL}/wp-json/wp/v2/posts?per_page=1",
+            auth=HTTPBasicAuth(WP_USER, WP_PASS), timeout=15)
+        return r.status_code == 200, f"HTTP {r.status_code}"
+    except Exception as e:
+        return False, str(e)
+
+def grok_research(topic):
+    if not GROK_KEY: print("No Grok key"); return ""
+    print(f"GROK: {topic}")
+    try:
+        r = requests.post('https://api.x.ai/v1/chat/completions',
+            headers={'Authorization': f'Bearer {GROK_KEY}', 'Content-Type': 'application/json'},
+            json={'model': 'grok-3', 'max_tokens': 600, 'temperature': 0.2,
+                  'messages': [{'role': 'user', 'content': f'Research "{topic}": key stats, AAN/NICE/AANS guidelines, 3 confirmed PubMed PMIDs, Pakistan context. 400 words max.'}]},
+            timeout=60)
+        b = r.json()['choices'][0]['message']['content']
+        print(f"Grok: {len(b.split())}w"); return b
+    except Exception as e:
+        print(f"Grok error: {e}"); return ""
+
+def claude_generate(topic, kw, brief):
+    if not CLAUDE_KEY:
+        print("ERROR: No ANTHROPIC_API_KEY"); sys.exit(1)
+    research = f"\n\nGROK RESEARCH:\n{brief}" if brief else ""
+    system = f"You are author of The Neuro Council, writing as {AUTHOR}. Write authoritative, evidence-based, SEO-optimised neuroscience content. Always include author byline and CTA: {CTA}. Only cite PubMed references you are certain exist. Educational disclaimer required."
+    prompt = f"""Write complete SEO blog article: **{topic}**
+Keyword: {kw}{research}
+
+Structure (1500w):
+META TITLE: [60 chars]
+META DESCRIPTION: [155 chars]
+# [H1]
+## Introduction (150w - real statistic hook)
+## What is it? (200w)
+## Causes (150w)
+## Symptoms - bold red flags (200w)
+## Diagnosis at Faraz Hospital (150w)
+## Treatment - cite evidence, BodyTom CT + Zeiss microscope (250w)
+## Recovery (150w)
+## FAQ 5 questions (200w)
+## Conclusion + CTA (100w)
+References: only certain ones. Otherwise: References available upon request.
+Author: {AUTHOR} | {CTA} | Disclaimer: Educational only."""
+
+    for model in MODELS:
+        for attempt in range(2):
+            try:
+                print(f"CLAUDE: {model} attempt {attempt+1}")
+                r = requests.post('https://api.anthropic.com/v1/messages',
+                    headers={'x-api-key': CLAUDE_KEY, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json'},
+                    json={'model': model, 'max_tokens': 4096, 'system': system, 'messages': [{'role': 'user', 'content': prompt}]},
+                    timeout=180)
+                if r.status_code == 200:
+                    t = r.json()['content'][0]['text']
+                    print(f"SUCCESS: {len(t.split())}w | {model}"); return t
+                print(f"Error {r.status_code}: {r.text[:150]}")
+                if r.status_code in [400, 404]: break
+            except requests.exceptions.ReadTimeout:
+                print("Timeout, retrying..."); time.sleep(10)
+            except Exception as e:
+                print(f"ERR: {e}"); break
+    print("ERROR: All Claude models failed"); sys.exit(1)
+
+def to_html(content):
+    h = re.sub(r'^# (.+)$', r'<h1>\1</h1>', content, flags=re.MULTILINE)
+    h = re.sub(r'^## (.+)$', r'<h2>\1</h2>', h, flags=re.MULTILINE)
+    h = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', h)
+    return '<p>' + h.replace('\n\n', '</p><p>').replace('\n', '<br>') + '</p>'
+
+def publish_wp(title, content, status='draft'):
+    ok, msg = verify_wp()
+    if not ok:
+        print(f"WP FAILED: {msg} | USER={WP_USER} PASS_LEN={len(WP_PASS)}"); return None
+    print(f"WP OK: {msg}")
+    try:
+        r = requests.post(f"{WP_URL}/wp-json/wp/v2/posts",
+            json={'title': title, 'content': to_html(content), 'status': status,
+                  'excerpt': re.sub(r'[#*_]', '', content)[:155]},
+            auth=HTTPBasicAuth(WP_USER, WP_PASS), timeout=30)
+        if r.status_code in [200, 201]:
+            d = r.json(); print(f"WP {status}: {d.get('link','')}"); return d
+        print(f"WP error {r.status_code}: {r.text[:300]}")
+    except Exception as e: print(f"WP error: {e}")
+    return None
+
+def main():
+    print("="*55)
+    print("THE NEURO COUNCIL v2.2 FINAL")
+    print(datetime.now().strftime('%A %d %B %Y %H:%M PKT'))
+    print(f"Mode: {PUBLISH_MODE}")
+    print("="*55)
+    td = get_topic(); topic, kw = td['t'], td['k']
+    print(f"Topic: {topic}")
+    brief = grok_research(topic)
+    content = claude_generate(topic, kw, brief)
+    wc = len(content.split()); print(f"Generated: {wc:,}w")
+    os.makedirs('council_output', exist_ok=True)
+    ds = datetime.now().strftime('%Y%m%d_%H%M')
+    fname = f"council_output/{ds}_{re.sub(chr(91)+'a-z0-9'+chr(93)+'+','-',topic.lower())[:40]}.md"
+    with open(fname, 'w', encoding='utf-8') as f: f.write(f"# {topic}\n\n{content}")
+    print(f"Saved: {fname}")
+    result = publish_wp(topic, content, PUBLISH_MODE)
+    url = result.get('link','') if result else ''
+    if TG_TOKEN and TG_CHAT:
+        try: requests.post(f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",json={'chat_id':TG_CHAT,'text':f"Neuro Council\nTopic: {topic}\nWords: {wc:,}\nURL: {url}"},timeout=10)
+        except: pass
+    print(f"DONE - {wc:,}w | {url}")
+
+if __name__ == '__main__': main()#!/usr/bin/env python3
+"""
 THE NEURO COUNCIL - Production Engine v2.0
 Dr. Wasif Rizwan Malik | PMDC 47983-P | drwasifmalik.com
 KEY FIXES: timeout=180, model=claude-sonnet-4-20250514, 3x retry, 18-topic pool
