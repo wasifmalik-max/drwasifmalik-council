@@ -225,7 +225,7 @@ def main():
             f.write(f"\n\n---\n## SOCIAL SUITE\n\n{social}")
     print(f"Saved: {fname}")
 
-    result = publish_wp(topic, content, PUBLISH_MODE, keywords)h
+    result = publish_wp(topic, content, PUBLISH_MODE, keywords)
     notify_tg(topic, result, wc)
 
     print("\n"+"="*60)
