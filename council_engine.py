@@ -2,13 +2,13 @@
 """
 THE NEURO COUNCIL - Production Engine v2.0
 Dr. Wasif Rizwan Malik | PMDC 47983-P | drwasifmalik.com
-KEY FIXES: timeout=180, model=claude-3-5-sonnet-20241022, 3x retry, 18-topic pool
+KEY FIXES: timeout=180, model=claude-sonnet-4-20250514, 3x retry, 18-topic pool
 """
 import os, requests, re, time
 from datetime import datetime
 
 CLAUDE_KEY   = os.environ.get('ANTHROPIC_API_KEY', '')
-GROK_KEY     = os.environ.get('GROK_API_KEY', '')
+GROK_KEY     = os.environ.get('GROK_API_KEY', '')h
 WP_URL       = os.environ.get('WP_URL', 'https://drwasifmalik.com')
 WP_USER      = os.environ.get('WP_USERNAME', '')
 WP_PASS      = os.environ.get('WP_APP_PASSWORD', '')
@@ -108,7 +108,7 @@ Disclaimer: Educational content only. Consult your neurosurgeon for specific adv
             r = requests.post('https://api.anthropic.com/v1/messages',
                 headers={'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','Content-Type':'application/json'},
                 json={
-                    'model':'claude-3-5-sonnet-20241022',
+                    'model':'claude-sonnet-4-20250514',
                     'max_tokens':4096,
                     'system':system,
                     'messages':[{'role':'user','content':prompt}]
@@ -135,7 +135,7 @@ def generate_social(topic, content):
     try:
         r = requests.post('https://api.anthropic.com/v1/messages',
             headers={'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','Content-Type':'application/json'},
-            json={'model':'claude-3-5-sonnet-20241022','max_tokens':1500,
+            json={'model':'claude-sonnet-4-20250514','max_tokens':1500,
                   'messages':[{'role':'user','content':f'Create social media posts for "{topic}".\nBased on: {content[:400]}...\n\nGenerate:\nFACEBOOK EN (180 words, end with WhatsApp +923458254232)\nFACEBOOK URDU (180 words)\nINSTAGRAM (caption + 15 hashtags)\nLINKEDIN (professional angle)'}]},
             timeout=120)
         if r.status_code == 200:
@@ -225,7 +225,7 @@ def main():
     notify_tg(topic, result, wc)
 
     print("\n"+"="*60)
-    print(f"COMPLETE - {wc:,} words | Model: claude-3-5-sonnet-20241022 | Timeout: 180s")
+    print(f"COMPLETE - {wc:,} words | Model: claude-sonnet-4-20250514 | Timeout: 180s")
     if result:
         print(f"URL: {result.get('url','')}")
     print("="*60)
