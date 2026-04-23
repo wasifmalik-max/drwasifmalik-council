@@ -2,27 +2,34 @@ name: Neuro Council Weekly Pipeline
 
 on:
   schedule:
-    - cron: '0 2 * * 1'
+    - cron: "0 2 * * 1"
   workflow_dispatch:
     inputs:
       topic:
-        description: 'Override topic'
+        description: "Override topic"
         required: false
       publish_mode:
-        description: 'publish or draft'
+        description: "publish or draft"
         required: false
-        default: 'draft'
+        default: "draft"
+
+env:
+  # Opt into Node 24 for JS-based actions now
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   council:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: "3.11"
+
       - run: pip install anthropic requests
+
       - name: Run Neuro Council Engine
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -35,6 +42,7 @@ jobs:
           MANUAL_TOPIC: ${{ github.event.inputs.topic }}
           PUBLISH_MODE: ${{ github.event.inputs.publish_mode || 'draft' }}
         run: python council_engine.py
+
       - name: Commit output
         run: |
           git config user.name "Neuro Council Bot"
