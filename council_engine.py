@@ -31,6 +31,22 @@ CTA    = "Book Consultation: WhatsApp +923458254232 | Faraz Hospital, Bahawalpur
 MODELS = ["claude-sonnet-4-20250514","claude-sonnet-4","claude-3-7-sonnet-20250219","claude-3-5-sonnet-20241022"]
 
 TOPICS = [
+
+# PATIENT EDUCATION TOPICS
+{"t": "How to find the best neurosurgeon in Pakistan", "k": "best neurosurgeon Pakistan Bahawalpur"},
+{"t": "Brain tumor symptoms you must not ignore", "k": "brain tumor warning signs symptoms"},
+{"t": "When to go to emergency for neurological symptoms", "k": "neurosurgery emergency red flags"},
+{"t": "Spine surgery recovery: what to expect", "k": "spine surgery recovery timeline"},
+{"t": "Epilepsy first aid: what to do during a seizure", "k": "epilepsy first aid seizure"},
+
+# ACADEMIC TOPICS  
+{"t": "How to prepare for FCPS neurosurgery exams", "k": "FCPS neurosurgery preparation"},
+{"t": "Latest advances in minimally invasive spine surgery", "k": "MISS minimally invasive spine surgery"},
+{"t": "Role of intraoperative MRI in brain tumor surgery", "k": "intraoperative iMRI brain tumor"},
+
+# CLINICAL TOPICS
+{"t": "Management of acute ischemic stroke", "k": "acute stroke management protocol"},
+{"t": "Spinal cord injury emergency protocol", "k": "spinal cord injury emergency"},
     {"t":"Lumbar disc herniation: when to operate and when to wait","k":"lumbar disc Pakistan"},
     {"t":"Brain tumour: the headache you must not ignore","k":"brain tumour Pakistan"},
     {"t":"Cervical myelopathy: the silent killer of hand function","k":"cervical myelopathy"},
