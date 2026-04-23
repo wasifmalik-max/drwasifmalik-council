@@ -6,17 +6,22 @@ on:
   workflow_dispatch:
     inputs:
       topic:
-        description: "Override topic"
+        description: "Override topic (optional)"
         required: false
         type: string
       publish_mode:
-        description: "publish or draft"
+        description: "draft or publish"
         required: false
         default: "draft"
         type: choice
         options:
           - draft
           - publish
+      dry_run:
+        description: "Run without WordPress publish/notifications"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: neuro-council-weekly
@@ -48,9 +53,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "requests==2.32.3"
+          python -m pip install -r requirements.txt
 
-      - name: Run Neuro Council Engine
+      - name: Run Neuro Council
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
@@ -63,15 +68,25 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           MANUAL_TOPIC: ${{ inputs.topic }}
           PUBLISH_MODE: ${{ inputs.publish_mode || 'draft' }}
-        run: python council_engine.py
+          WP_VERIFY_TIMEOUT: "45"
+          WP_PUBLISH_TIMEOUT: "60"
+          WP_VERIFY_RETRIES: "2"
+          WP_PUBLISH_RETRIES: "2"
+          WP_RETRY_SLEEP: "8"
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python council_engine.py --dry-run
+          else
+            python council_engine.py
+          fi
 
       - name: Commit output if changed
         run: |
           git config user.name "Neuro Council Bot"
-          git config user.email "council@drwasifmalik.com"
+          git config user.email "bot@drwasifmalik.com"
           git add -A
           if git diff --staged --quiet; then
-            echo "No changes to commit."
+            echo "No changes to commit"
             exit 0
           fi
           git commit -m "Council output $(date -u '+%Y-%m-%d')"
