@@ -63,7 +63,7 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           MANUAL_TOPIC: ${{ inputs.topic }}
           PUBLISH_MODE: ${{ inputs.publish_mode || 'draft' }}
-        run: python neuro_council_v25_final.py
+        run: python council_engine.py
 
       - name: Commit output if changed
         run: |
