@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-THE NEURO COUNCIL v2.5 FINAL
+THE NEURO COUNCIL v2.6 STABLE
 Dr. Wasif Rizwan Malik | PMDC 47983-P | drwasifmalik.com
-Best of v2.2 + v2.5: PMID verify, model fallback, optional Gmail, secure
+Adds: WP timeout + retry + preflight checks + dry-run
 """
 
 import os
@@ -17,6 +17,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 
+# -------------------- ENV --------------------
 CLAUDE_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 if not CLAUDE_KEY:
     print("ERROR: ANTHROPIC_API_KEY required")
@@ -31,8 +32,17 @@ GMAIL_PASS = os.environ.get("GMAIL_APP_PASSWORD", "")
 TG_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT = os.environ.get("TELEGRAM_CHAT_ID", "")
 MANUAL_TOPIC = os.environ.get("MANUAL_TOPIC", "")
-PUBLISH_MODE = os.environ.get("PUBLISH_MODE", "draft")
+PUBLISH_MODE = os.environ.get("PUBLISH_MODE", "draft").lower()
+
+# Runtime flags
 DRY_RUN = "--dry-run" in sys.argv
+
+# WP reliability knobs (optional env overrides)
+WP_VERIFY_TIMEOUT = int(os.environ.get("WP_VERIFY_TIMEOUT", "45"))
+WP_PUBLISH_TIMEOUT = int(os.environ.get("WP_PUBLISH_TIMEOUT", "60"))
+WP_VERIFY_RETRIES = int(os.environ.get("WP_VERIFY_RETRIES", "2"))
+WP_PUBLISH_RETRIES = int(os.environ.get("WP_PUBLISH_RETRIES", "2"))
+WP_RETRY_SLEEP = int(os.environ.get("WP_RETRY_SLEEP", "8"))
 
 AUTHOR = (
     "Dr. Wasif Rizwan Malik | MBBS, FCPS (Neurosurgery) | PMDC 47983-P | "
@@ -79,6 +89,20 @@ TOPICS = [
 ]
 
 
+def preflight():
+    print(f"CWD: {os.getcwd()}")
+    print(f"SCRIPT: {os.path.abspath(__file__)}")
+    print(f"WP_URL: {WP_URL}")
+    print(f"WP_USER set: {bool(WP_USER)} | WP_PASS set: {bool(WP_PASS)}")
+    print(f"Dry Run: {DRY_RUN}")
+
+    if not WP_URL.startswith("http"):
+        print("ERROR: WP_URL must start with http/https")
+        sys.exit(1)
+
+    os.makedirs("council_output", exist_ok=True)
+
+
 def get_topic():
     if MANUAL_TOPIC:
         return {"t": MANUAL_TOPIC, "k": MANUAL_TOPIC}
@@ -88,15 +112,28 @@ def get_topic():
 def verify_wp():
     if not all([WP_URL, WP_USER, WP_PASS]):
         return False, f"Missing: USER={bool(WP_USER)} PASS={bool(WP_PASS)}"
-    try:
-        response = requests.get(
-            f"{WP_URL}/wp-json/wp/v2/posts?per_page=1",
-            auth=HTTPBasicAuth(WP_USER, WP_PASS),
-            timeout=15,
-        )
-        return response.status_code == 200, f"HTTP {response.status_code}"
-    except Exception as exc:
-        return False, str(exc)
+
+    last_error = "unknown"
+    for attempt in range(1, WP_VERIFY_RETRIES + 1):
+        try:
+            r = requests.get(
+                f"{WP_URL}/wp-json/wp/v2/posts?per_page=1",
+                auth=HTTPBasicAuth(WP_USER, WP_PASS),
+                timeout=WP_VERIFY_TIMEOUT,
+            )
+            if r.status_code == 200:
+                return True, f"HTTP 200 (attempt {attempt})"
+
+            last_error = f"HTTP {r.status_code}"
+            print(f"WP verify attempt {attempt} failed: {last_error}")
+        except Exception as exc:
+            last_error = str(exc)
+            print(f"WP verify attempt {attempt} exception: {last_error}")
+
+        if attempt < WP_VERIFY_RETRIES:
+            time.sleep(WP_RETRY_SLEEP)
+
+    return False, last_error
 
 
 def verify_pmid(pmid):
@@ -104,12 +141,12 @@ def verify_pmid(pmid):
     if not pmid or len(pmid) < 5:
         return False
     try:
-        response = requests.get(
+        r = requests.get(
             "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi",
             params={"db": "pubmed", "id": pmid, "retmode": "json"},
             timeout=10,
         )
-        data = response.json()
+        data = r.json()
         return pmid in data.get("result", {}) and "error" not in data["result"].get(pmid, {})
     except Exception:
         return False
@@ -125,7 +162,7 @@ def clean_pmids(content):
                 content,
                 flags=re.IGNORECASE,
             )
-            print(f"  Removed unverified PMID: {pmid}")
+            print(f"Removed unverified PMID: {pmid}")
     return content
 
 
@@ -135,7 +172,7 @@ def grok_research(topic):
         return ""
     print(f"GROK: {topic}")
     try:
-        response = requests.post(
+        r = requests.post(
             "https://api.x.ai/v1/chat/completions",
             headers={"Authorization": f"Bearer {GROK_KEY}", "Content-Type": "application/json"},
             json={
@@ -154,8 +191,8 @@ def grok_research(topic):
             },
             timeout=60,
         )
-        response.raise_for_status()
-        brief = response.json()["choices"][0]["message"]["content"]
+        r.raise_for_status()
+        brief = r.json()["choices"][0]["message"]["content"]
         print(f"Grok: {len(brief.split())}w")
         return brief
     except Exception as exc:
@@ -195,7 +232,7 @@ Author: {AUTHOR} | {CTA} | Disclaimer: Educational only."""
         for attempt in range(2):
             try:
                 print(f"CLAUDE: {model} attempt {attempt + 1}")
-                response = requests.post(
+                r = requests.post(
                     "https://api.anthropic.com/v1/messages",
                     headers={
                         "x-api-key": CLAUDE_KEY,
@@ -210,19 +247,19 @@ Author: {AUTHOR} | {CTA} | Disclaimer: Educational only."""
                     },
                     timeout=180,
                 )
-                if response.status_code == 200:
-                    text = response.json()["content"][0]["text"]
+                if r.status_code == 200:
+                    text = r.json()["content"][0]["text"]
                     print(f"SUCCESS: {len(text.split())}w | {model}")
                     return clean_pmids(text)
 
-                print(f"Error {response.status_code}: {response.text[:150]}")
-                if response.status_code in [400, 404]:
+                print(f"Error {r.status_code}: {r.text[:150]}")
+                if r.status_code in (400, 404):
                     break
             except requests.exceptions.ReadTimeout:
-                print("Timeout, retrying...")
+                print("Claude timeout, retrying...")
                 time.sleep(10)
             except Exception as exc:
-                print(f"ERR: {exc}")
+                print(f"Claude error: {exc}")
                 break
 
     print("ERROR: All Claude models failed")
@@ -237,31 +274,39 @@ def to_html(content):
 
 
 def publish_wp(title, content, status="draft"):
-    ok, message = verify_wp()
+    ok, msg = verify_wp()
     if not ok:
-        print(f"WP FAILED: {message} | USER={WP_USER} PASS_LEN={len(WP_PASS)}")
+        print(f"WP FAILED precheck: {msg} | USER={WP_USER} PASS_LEN={len(WP_PASS)}")
         return None
-    print(f"WP OK: {message}")
 
-    try:
-        response = requests.post(
-            f"{WP_URL}/wp-json/wp/v2/posts",
-            json={
-                "title": title,
-                "content": to_html(content),
-                "status": status,
-                "excerpt": re.sub(r"[#*_]", "", content)[:155],
-            },
-            auth=HTTPBasicAuth(WP_USER, WP_PASS),
-            timeout=30,
-        )
-        if response.status_code in [200, 201]:
-            data = response.json()
-            print(f"WP {status}: {data.get('link', '')}")
-            return data
-        print(f"WP error {response.status_code}: {response.text[:300]}")
-    except Exception as exc:
-        print(f"WP error: {exc}")
+    print(f"WP precheck OK: {msg}")
+    payload = {
+        "title": title,
+        "content": to_html(content),
+        "status": status if status in {"draft", "publish"} else "draft",
+        "excerpt": re.sub(r"[#*_]", "", content)[:155],
+    }
+
+    for attempt in range(1, WP_PUBLISH_RETRIES + 1):
+        try:
+            r = requests.post(
+                f"{WP_URL}/wp-json/wp/v2/posts",
+                json=payload,
+                auth=HTTPBasicAuth(WP_USER, WP_PASS),
+                timeout=WP_PUBLISH_TIMEOUT,
+            )
+            if r.status_code in (200, 201):
+                data = r.json()
+                print(f"WP {payload['status']} success (attempt {attempt}): {data.get('link', '')}")
+                return data
+
+            print(f"WP publish attempt {attempt} HTTP {r.status_code}: {r.text[:250]}")
+        except Exception as exc:
+            print(f"WP publish attempt {attempt} exception: {exc}")
+
+        if attempt < WP_PUBLISH_RETRIES:
+            time.sleep(WP_RETRY_SLEEP)
+
     return None
 
 
@@ -269,7 +314,9 @@ def notify(subject, body):
     if GMAIL_USER and GMAIL_PASS:
         try:
             msg = MIMEText(body)
-            msg["Subject"], msg["From"], msg["To"] = subject, GMAIL_USER, GMAIL_USER
+            msg["Subject"] = subject
+            msg["From"] = GMAIL_USER
+            msg["To"] = GMAIL_USER
             with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
                 smtp.login(GMAIL_USER, GMAIL_PASS)
                 smtp.send_message(msg)
@@ -282,55 +329,54 @@ def notify(subject, body):
             requests.post(
                 f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
                 json={"chat_id": TG_CHAT, "text": body},
-                timeout=10,
+                timeout=12,
             )
             print("Telegram sent")
-        except Exception:
-            pass
+        except Exception as exc:
+            print(f"Telegram error: {exc}")
 
 
 def main():
-    print("=" * 55)
-    print("THE NEURO COUNCIL v2.5 FINAL")
+    print("=" * 60)
+    print("THE NEURO COUNCIL v2.6 STABLE")
     print(datetime.now().strftime("%A %d %B %Y %H:%M PKT"))
     print(f"Mode: {PUBLISH_MODE}")
-    print(f"Dry Run: {DRY_RUN}")
-    print("=" * 55)
+    print("=" * 60)
 
-    topic_data = get_topic()
-    topic, keyword = topic_data["t"], topic_data["k"]
+    preflight()
+
+    td = get_topic()
+    topic, keyword = td["t"], td["k"]
     print(f"Topic: {topic}")
 
     brief = grok_research(topic)
     content = claude_generate(topic, keyword, brief)
 
-    word_count = len(content.split())
-    print(f"Generated: {word_count:,}w")
+    wc = len(content.split())
+    print(f"Generated: {wc:,}w")
 
-    os.makedirs("council_output", exist_ok=True)
-    date_stamp = datetime.now().strftime("%Y%m%d_%H%M")
+    ds = datetime.now().strftime("%Y%m%d_%H%M")
     slug = re.sub(r"[^a-z0-9]+", "-", topic.lower()).strip("-")[:40]
-    filename = f"council_output/{date_stamp}_{slug}.md"
+    fname = f"council_output/{ds}_{slug}.md"
 
-    with open(filename, "w", encoding="utf-8") as output_file:
-        output_file.write(f"# {topic}\n\n{content}")
-    print(f"Saved: {filename}")
+    with open(fname, "w", encoding="utf-8") as f:
+        f.write(f"# {topic}\n\n{content}")
+    print(f"Saved: {fname}")
 
     if DRY_RUN:
         print("DRY RUN enabled: skipping WordPress publish and notifications.")
-        result = None
         url = "dry-run (not published)"
     else:
         result = publish_wp(topic, content, PUBLISH_MODE)
         url = result.get("link", "") if result else "not published"
         notify(
             f"Neuro Council: {topic}",
-            f"Topic: {topic}\nWords: {word_count:,}\nMode: {PUBLISH_MODE}\nURL: {url}",
+            f"Topic: {topic}\nWords: {wc:,}\nMode: {PUBLISH_MODE}\nURL: {url}",
         )
 
-    print("=" * 55)
-    print(f"DONE - {word_count:,}w | {url}")
-    print("=" * 55)
+    print("=" * 60)
+    print(f"DONE - {wc:,}w | {url}")
+    print("=" * 60)
 
 
 if __name__ == "__main__":
