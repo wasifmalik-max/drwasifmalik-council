@@ -18,16 +18,13 @@ on:
           - draft
           - publish
 
-# Prevent overlapping runs (e.g., schedule + manual)
 concurrency:
   group: neuro-council-weekly
   cancel-in-progress: false
 
-# Least privilege for GITHUB_TOKEN (needed for commit/push)
 permissions:
   contents: write
 
-# Opt into Node 24 for JavaScript actions now
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   PYTHONUNBUFFERED: "1"
@@ -40,15 +37,11 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      # Pin to full commit SHAs for supply-chain safety.
-      # Replace the SHAs below with current official SHAs from:
-      # https://github.com/actions/checkout
-      # https://github.com/actions/setup-python
       - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v5.0.0
+        uses: actions/checkout@v5
 
       - name: Setup Python
-        uses: actions/setup-python@42375524aee83cf8fd8e52f6af89ffb8e2f8c8f3 # v6.0.0
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: "pip"
@@ -56,8 +49,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # Prefer requirements.txt for strict pinning in repo:
-          # python -m pip install -r requirements.txt
           python -m pip install "requests==2.32.3"
 
       - name: Run Neuro Council Engine
@@ -69,15 +60,11 @@ jobs:
           WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          # Optional (only used if your script supports Gmail):
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-
           MANUAL_TOPIC: ${{ inputs.topic }}
           PUBLISH_MODE: ${{ inputs.publish_mode || 'draft' }}
-        run: |
-          # Keep script name aligned with your repo
-          python neuro_council_v25_final.py
+        run: python neuro_council_v25_final.py
 
       - name: Commit output if changed
         run: |
