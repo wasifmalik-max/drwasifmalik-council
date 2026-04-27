@@ -1,0 +1,24 @@
+============================================================
+THE NEURO COUNCIL v2.6 STABLE
+Monday 27 April 2026 11:30 PKT
+Mode: publish
+============================================================
+CWD: /home/runner/work/drwasifmalik-council/drwasifmalik-council
+SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engine.py
+WP_URL: https://drwasifmalik.com
+WP_USER set: True | WP_PASS set: True
+Dry Run: False
+Topic: Pituitary adenoma: the tumour behind hormonal chaos
+GROK: Pituitary adenoma: the tumour behind hormonal chaos
+Grok: 346w
+CLAUDE: claude-sonnet-4-20250514 attempt 1
+SUCCESS: 1685w | claude-sonnet-4-20250514
+Generated: 1,685w
+Saved: council_output/20260427_1131_pituitary-adenoma-the-tumour-behind-horm.md
+WP precheck OK: HTTP 200 (attempt 1)
+WP publish success (attempt 1): https://drwasifmalik.com/pituitary-adenoma-the-tumour-behind-hormonal-chaos/
+Gmail sent
+Telegram sent
+============================================================
+DONE - 1,685w | https://drwasifmalik.com/pituitary-adenoma-the-tumour-behind-hormonal-chaos/
+============================================================
