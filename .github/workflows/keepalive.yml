@@ -1,0 +1,66 @@
+name: Keep Alive
+
+on:
+  schedule:
+    - cron: "0 0 * * 0" # Every Sunday 00:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: keepalive-weekly
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    name: Keep Repository Active
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Write keepalive timestamp
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "Keep Alive Bot"
+          git config user.email "bot@drwasifmalik.com"
+
+          ts="$(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "$ts" >> .keepalive
+          git add .keepalive
+
+          if git diff --staged --quiet; then
+            echo "No keepalive changes to commit"
+            exit 0
+          fi
+
+          git commit -m "keep-alive $(date -u '+%Y-%m-%d')"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
+
+      - name: Verify latest keepalive commit
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          last_msg="$(git log -1 --pretty=%s)"
+          echo "Latest commit message: $last_msg"
+
+          if [[ "$last_msg" != keep-alive* ]]; then
+            echo "::error::Latest commit is not a keep-alive commit"
+            exit 1
+          fi
+
+          {
+            echo "## Keepalive Verification ✅"
+            echo "- Branch: \`${GITHUB_REF_NAME}\`"
+            echo "- Commit: \`$(git rev-parse --short HEAD)\`"
+            echo "- Message: \`$last_msg\`"
+          } >> "${GITHUB_STEP_SUMMARY}"

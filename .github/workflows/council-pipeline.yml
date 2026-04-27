@@ -2,21 +2,13 @@ name: Neuro Council Weekly Pipeline
 
 on:
   schedule:
-    - cron: "0 2 * * 1"
+    - cron: "0 2 * * 1" # Every Monday 02:00 UTC
   workflow_dispatch:
     inputs:
       topic:
         description: "Override topic (optional)"
         required: false
         type: string
-      publish_mode:
-        description: "draft or publish"
-        required: false
-        default: "draft"
-        type: choice
-        options:
-          - draft
-          - publish
       dry_run:
         description: "Run without WordPress publish/notifications"
         required: false
@@ -34,28 +26,66 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   PYTHONUNBUFFERED: "1"
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PUBLISH_MODE: "publish"
+  WP_VERIFY_TIMEOUT: "45"
+  WP_PUBLISH_TIMEOUT: "60"
+  WP_VERIFY_RETRIES: "3"
+  WP_PUBLISH_RETRIES: "3"
+  WP_RETRY_SLEEP: "8"
 
 jobs:
   council:
     name: Generate and Publish Council Content
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+          cache: "pip"
+
+      - name: Validate required secrets
+        shell: bash
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+          WP_URL: ${{ secrets.WP_URL }}
+          WP_USERNAME: ${{ secrets.WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for v in ANTHROPIC_API_KEY GROK_API_KEY WP_URL WP_USERNAME WP_APP_PASSWORD TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID GMAIL_USER GMAIL_APP_PASSWORD; do
+            if [ -z "${!v:-}" ]; then
+              echo "::error::Missing required secret: $v"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
 
       - name: Install dependencies
+        shell: bash
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+          python -m pip install requests
 
-      - name: Run Neuro Council
+      - name: Run Neuro Council (forced publish unless dry-run)
+        shell: bash
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
@@ -67,27 +97,86 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           MANUAL_TOPIC: ${{ inputs.topic }}
-          PUBLISH_MODE: ${{ inputs.publish_mode || 'draft' }}
-          WP_VERIFY_TIMEOUT: "45"
-          WP_PUBLISH_TIMEOUT: "60"
-          WP_VERIFY_RETRIES: "2"
-          WP_PUBLISH_RETRIES: "2"
-          WP_RETRY_SLEEP: "8"
         run: |
+          set -euo pipefail
           if [ "${{ inputs.dry_run }}" = "true" ]; then
-            python council_engine.py --dry-run
+            echo "Running DRY RUN mode (no publish)"
+            python council_engine.py --dry-run | tee council_run.log
           else
-            python council_engine.py
+            echo "Running LIVE PUBLISH mode"
+            python council_engine.py | tee council_run.log
           fi
 
-      - name: Commit output if changed
+      - name: Verify latest WordPress post is published
+        if: ${{ inputs.dry_run != true }}
+        shell: bash
+        env:
+          WP_URL: ${{ secrets.WP_URL }}
+          WP_USERNAME: ${{ secrets.WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
         run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          import sys
+          import requests
+          from requests.auth import HTTPBasicAuth
+
+          wp = os.environ["WP_URL"].rstrip("/")
+          user = os.environ["WP_USERNAME"]
+          app = os.environ["WP_APP_PASSWORD"]
+
+          url = f"{wp}/wp-json/wp/v2/posts?per_page=1&orderby=date&order=desc"
+          r = requests.get(url, auth=HTTPBasicAuth(user, app), timeout=30)
+          if r.status_code != 200:
+              print(f"::error::WP API failed: {r.status_code} {r.text[:400]}")
+              sys.exit(1)
+
+          posts = r.json()
+          if not posts:
+              print("::error::No posts returned from WP API")
+              sys.exit(1)
+
+          p = posts[0]
+          pid = p.get("id")
+          status = p.get("status")
+          link = p.get("link", "")
+          title = (p.get("title") or {}).get("rendered", "").strip()
+
+          print(f"Latest post id={pid}, status={status}, title={title}, link={link}")
+
+          if status != "publish":
+              print(f"::error::Latest post is not published (status={status})")
+              sys.exit(1)
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+              f.write("## Publish Verification ✅\n")
+              f.write(f"- Post ID: `{pid}`\n")
+              f.write(f"- Status: `{status}`\n")
+              f.write(f"- Title: {title}\n")
+              f.write(f"- Link: {link}\n")
+          PY
+
+      - name: Upload run log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: council-run-log-${{ github.run_id }}
+          path: council_run.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Commit output if changed
+        shell: bash
+        run: |
+          set -euo pipefail
           git config user.name "Neuro Council Bot"
           git config user.email "bot@drwasifmalik.com"
           git add -A
           if git diff --staged --quiet; then
-            echo "No changes to commit"
+            echo "No changes to commit."
             exit 0
           fi
           git commit -m "Council output $(date -u '+%Y-%m-%d')"
-          git push
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
