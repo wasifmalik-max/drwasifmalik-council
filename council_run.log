@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.6 STABLE
-Monday 04 May 2026 10:24 PKT
+Monday 11 May 2026 12:31 PKT
 Mode: publish
 ============================================================
 CWD: /home/runner/work/drwasifmalik-council/drwasifmalik-council
@@ -8,17 +8,18 @@ SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engi
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
 Dry Run: False
-Topic: Parkinson disease: from diagnosis to deep brain stimulation
-GROK: Parkinson disease: from diagnosis to deep brain stimulation
-Grok: 351w
+Topic: CVST: the stroke that strikes young women after childbirth
+GROK: CVST: the stroke that strikes young women after childbirth
+Grok: 343w
 CLAUDE: claude-sonnet-4-20250514 attempt 1
-SUCCESS: 1532w | claude-sonnet-4-20250514
-Generated: 1,532w
-Saved: council_output/20260504_1025_parkinson-disease-from-diagnosis-to-deep.md
-WP precheck OK: HTTP 200 (attempt 1)
-WP publish success (attempt 1): https://drwasifmalik.com/parkinson-disease-from-diagnosis-to-deep-brain-stimulation/
+SUCCESS: 1844w | claude-sonnet-4-20250514
+Generated: 1,844w
+Saved: council_output/20260511_1233_cvst-the-stroke-that-strikes-young-women.md
+WP verify attempt 1 exception: HTTPSConnectionPool(host='drwasifmalik.com', port=443): Read timed out. (read timeout=45)
+WP precheck OK: HTTP 200 (attempt 2)
+WP publish success (attempt 1): https://drwasifmalik.com/cvst-the-stroke-that-strikes-young-women-after-childbirth/
 Gmail sent
 Telegram sent
 ============================================================
-DONE - 1,532w | https://drwasifmalik.com/parkinson-disease-from-diagnosis-to-deep-brain-stimulation/
+DONE - 1,844w | https://drwasifmalik.com/cvst-the-stroke-that-strikes-young-women-after-childbirth/
 ============================================================
