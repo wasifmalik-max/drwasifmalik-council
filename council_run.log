@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.6 STABLE
-Monday 11 May 2026 12:31 PKT
+Monday 18 May 2026 14:39 PKT
 Mode: publish
 ============================================================
 CWD: /home/runner/work/drwasifmalik-council/drwasifmalik-council
@@ -8,18 +8,18 @@ SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engi
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
 Dry Run: False
-Topic: CVST: the stroke that strikes young women after childbirth
-GROK: CVST: the stroke that strikes young women after childbirth
-Grok: 343w
+Topic: Bell palsy: complete recovery is possible
+GROK: Bell palsy: complete recovery is possible
+Grok: 200w
 CLAUDE: claude-sonnet-4-20250514 attempt 1
-SUCCESS: 1844w | claude-sonnet-4-20250514
-Generated: 1,844w
-Saved: council_output/20260511_1233_cvst-the-stroke-that-strikes-young-women.md
+SUCCESS: 1855w | claude-sonnet-4-20250514
+Generated: 1,855w
+Saved: council_output/20260518_1441_bell-palsy-complete-recovery-is-possible.md
 WP verify attempt 1 exception: HTTPSConnectionPool(host='drwasifmalik.com', port=443): Read timed out. (read timeout=45)
 WP precheck OK: HTTP 200 (attempt 2)
-WP publish success (attempt 1): https://drwasifmalik.com/cvst-the-stroke-that-strikes-young-women-after-childbirth/
+WP publish success (attempt 1): https://drwasifmalik.com/bell-palsy-complete-recovery-is-possible/
 Gmail sent
 Telegram sent
 ============================================================
-DONE - 1,844w | https://drwasifmalik.com/cvst-the-stroke-that-strikes-young-women-after-childbirth/
+DONE - 1,855w | https://drwasifmalik.com/bell-palsy-complete-recovery-is-possible/
 ============================================================
