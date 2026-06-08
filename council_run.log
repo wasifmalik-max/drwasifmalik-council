@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.6 STABLE
-Monday 08 June 2026 06:43 PKT
+Monday 08 June 2026 14:19 PKT
 Mode: publish
 ============================================================
 CWD: /home/runner/work/drwasifmalik-council/drwasifmalik-council
@@ -10,15 +10,15 @@ WP_USER set: True | WP_PASS set: True
 Dry Run: False
 Topic: Trigeminal neuralgia: the most painful condition known
 GROK: Trigeminal neuralgia: the most painful condition known
-Grok: 195w
+Grok: 185w
 CLAUDE: claude-sonnet-4-20250514 attempt 1
-SUCCESS: 1518w | claude-sonnet-4-20250514
-Generated: 1,518w
-Saved: council_output/20260608_0644_trigeminal-neuralgia-the-most-painful-co.md
+SUCCESS: 1298w | claude-sonnet-4-20250514
+Generated: 1,298w
+Saved: council_output/20260608_1420_trigeminal-neuralgia-the-most-painful-co.md
 WP precheck OK: HTTP 200 (attempt 1)
-WP publish success (attempt 1): https://drwasifmalik.com/trigeminal-neuralgia-the-most-painful-condition-known/
+WP publish success (attempt 1): https://drwasifmalik.com/trigeminal-neuralgia-the-most-painful-condition-known-2/
 Gmail sent
 Telegram sent
 ============================================================
-DONE - 1,518w | https://drwasifmalik.com/trigeminal-neuralgia-the-most-painful-condition-known/
+DONE - 1,298w | https://drwasifmalik.com/trigeminal-neuralgia-the-most-painful-condition-known-2/
 ============================================================
