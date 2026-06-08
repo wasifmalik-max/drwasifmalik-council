@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.6 STABLE
-Monday 01 June 2026 06:56 PKT
+Monday 08 June 2026 06:43 PKT
 Mode: publish
 ============================================================
 CWD: /home/runner/work/drwasifmalik-council/drwasifmalik-council
@@ -8,18 +8,17 @@ SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engi
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
 Dry Run: False
-Topic: Glioblastoma 2025: new hope and new treatments
-GROK: Glioblastoma 2025: new hope and new treatments
-Grok: 204w
+Topic: Trigeminal neuralgia: the most painful condition known
+GROK: Trigeminal neuralgia: the most painful condition known
+Grok: 195w
 CLAUDE: claude-sonnet-4-20250514 attempt 1
-SUCCESS: 1271w | claude-sonnet-4-20250514
-Generated: 1,271w
-Saved: council_output/20260601_0657_glioblastoma-2025-new-hope-and-new-treat.md
-WP verify attempt 1 exception: HTTPSConnectionPool(host='drwasifmalik.com', port=443): Read timed out. (read timeout=45)
-WP precheck OK: HTTP 200 (attempt 2)
-WP publish success (attempt 1): https://drwasifmalik.com/glioblastoma-2025-new-hope-and-new-treatments/
+SUCCESS: 1518w | claude-sonnet-4-20250514
+Generated: 1,518w
+Saved: council_output/20260608_0644_trigeminal-neuralgia-the-most-painful-co.md
+WP precheck OK: HTTP 200 (attempt 1)
+WP publish success (attempt 1): https://drwasifmalik.com/trigeminal-neuralgia-the-most-painful-condition-known/
 Gmail sent
 Telegram sent
 ============================================================
-DONE - 1,271w | https://drwasifmalik.com/glioblastoma-2025-new-hope-and-new-treatments/
+DONE - 1,518w | https://drwasifmalik.com/trigeminal-neuralgia-the-most-painful-condition-known/
 ============================================================
