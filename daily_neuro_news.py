@@ -14,6 +14,14 @@ from datetime import datetime, timezone
 import requests
 from requests.auth import HTTPBasicAuth
 
+from image_policy import (
+    append_byline,
+    create_ai_featured_media,
+    resolve_author_photo_url,
+    author_byline_html,
+    scrub_forbidden_featured,
+)
+
 GROK_KEY = os.environ.get("GROK_API_KEY", "")
 WP_URL = os.environ.get("WP_URL", "https://drwasifmalik.com").rstrip("/")
 WP_USER = os.environ.get("WP_USERNAME", "")
@@ -172,7 +180,7 @@ def ensure_category():
     return None
 
 
-def publish(title: str, html: str, cat_id):
+def publish(title: str, html: str, cat_id, featured_media=None):
     if DRY_RUN:
         print("DRY_RUN — skip WP publish")
         return {"id": 0, "link": "(dry-run)", "status": "dry-run"}
@@ -187,6 +195,8 @@ def publish(title: str, html: str, cat_id):
     }
     if cat_id:
         payload["categories"] = [cat_id]
+    if featured_media:
+        payload["featured_media"] = int(featured_media)
     for attempt in range(1, 4):
         try:
             r = requests.post(
@@ -198,6 +208,8 @@ def publish(title: str, html: str, cat_id):
             if r.status_code in (200, 201):
                 data = r.json()
                 print(f"WP {status}: id={data.get('id')} link={data.get('link')}")
+                if data.get("id"):
+                    scrub_forbidden_featured(int(data["id"]))
                 return data
             print(f"WP attempt {attempt} failed: {r.status_code} {r.text[:250]}")
         except Exception as exc:
@@ -228,6 +240,11 @@ def main():
         f'This daily brief is separate from the weekly Neuro Council deep-dive.</em></p>\n'
         f'<p><a href="https://rx.drwasifmalik.com">Book a consultation</a></p>'
     )
+    # Mini author byline (small photo + credentials) — not used as featured image
+    if DRY_RUN:
+        html = append_byline(html)
+    else:
+        html = html.rstrip() + "\n" + author_byline_html(resolve_author_photo_url())
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d")
     out_path = f"council_output/daily_news_{stamp}.md"
@@ -235,9 +252,15 @@ def main():
         f.write(md)
     print("Wrote", out_path, f"({len(md.split())}w)")
 
+    featured_id = None
+    if not DRY_RUN:
+        featured_id = create_ai_featured_media(title, slug_hint=title)
+        if not featured_id:
+            print("WARN: AI featured image unavailable — publishing without doctor-face fallback")
+
     cat_id = None if DRY_RUN else ensure_category()
-    result = publish(title, html, cat_id)
-    print("DONE", result.get("status"), result.get("link"))
+    result = publish(title, html, cat_id, featured_media=featured_id)
+    print("DONE", result.get("status"), result.get("link"), "featured=", featured_id)
 
 
 if __name__ == "__main__":

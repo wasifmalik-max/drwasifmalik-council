@@ -49,5 +49,17 @@ Lightweight **daily** short briefs on brain / spine / nerve / mind advances.
 
 Manual dry-run: Actions → Neurosciences Daily News → Run workflow → `dry_run=true` (optional staging).
 
+## Image policy
+
+Shared module: `image_policy.py` (used by daily + weekly publishers).
+
+| Surface | Rule |
+|---|---|
+| Homepage / promo | Real occasion portraits — media **1606** (white coat), **1637** (OR), **1638** (academic) |
+| Post featured / cover | AI medical/neuroscience visual via **Grok Imagine** (`/v1/images/generations`). Never doctor personal photos. No paediatric faces. |
+| Post footer | Mini author byline: name + MBBS/FCPS/PMDC + small circular photo (1606) |
+
+Booking CTAs remain `https://rx.drwasifmalik.com`.
+
 ---
 *drwasifmalik.com | WhatsApp +923458254232*

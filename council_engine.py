@@ -17,6 +17,13 @@ from email.mime.text import MIMEText
 import requests
 from requests.auth import HTTPBasicAuth
 
+from image_policy import (
+    author_byline_html,
+    create_ai_featured_media,
+    resolve_author_photo_url,
+    scrub_forbidden_featured,
+)
+
 
 # -------------------- ENV --------------------
 GROK_KEY = os.environ.get("GROK_API_KEY", "")
@@ -334,19 +341,22 @@ def to_html(content):
     return "<p>" + html.replace("\n\n", "</p><p>").replace("\n", "<br>") + "</p>"
 
 
-def publish_wp(title, content, status="draft"):
+def publish_wp(title, content, status="draft", featured_media=None):
     ok, msg = verify_wp()
     if not ok:
         print(f"WP FAILED precheck: {msg} | USER={WP_USER} PASS_LEN={len(WP_PASS)}")
         return None
 
     print(f"WP precheck OK: {msg}")
+    html = to_html(content).rstrip() + "\n" + author_byline_html(resolve_author_photo_url())
     payload = {
         "title": title,
-        "content": to_html(content),
+        "content": html,
         "status": status if status in {"draft", "publish"} else "draft",
         "excerpt": re.sub(r"[#*_]", "", content)[:155],
     }
+    if featured_media:
+        payload["featured_media"] = int(featured_media)
 
     for attempt in range(1, WP_PUBLISH_RETRIES + 1):
         try:
@@ -359,6 +369,8 @@ def publish_wp(title, content, status="draft"):
             if r.status_code in (200, 201):
                 data = r.json()
                 print(f"WP {payload['status']} success (attempt {attempt}): {data.get('link', '')}")
+                if data.get("id"):
+                    scrub_forbidden_featured(int(data["id"]))
                 return data
 
             print(f"WP publish attempt {attempt} HTTP {r.status_code}: {r.text[:250]}")
@@ -425,19 +437,23 @@ def main():
         f.write(f"# {topic}\n\n{content}")
     print(f"Saved: {fname}")
 
+    featured_id = None
     if DRY_RUN:
         print("DRY RUN enabled: skipping WordPress publish and notifications.")
         url = "dry-run (not published)"
     else:
-        result = publish_wp(topic, content, PUBLISH_MODE)
+        featured_id = create_ai_featured_media(topic, slug_hint=topic)
+        if not featured_id:
+            print("WARN: AI featured image unavailable — publishing without doctor-face fallback")
+        result = publish_wp(topic, content, PUBLISH_MODE, featured_media=featured_id)
         url = result.get("link", "") if result else "not published"
         notify(
             f"Neuro Council: {topic}",
-            f"Topic: {topic}\nWords: {wc:,}\nMode: {PUBLISH_MODE}\nURL: {url}",
+            f"Topic: {topic}\nWords: {wc:,}\nMode: {PUBLISH_MODE}\nURL: {url}\nFeatured: {featured_id}",
         )
 
     print("=" * 60)
-    print(f"DONE - {wc:,}w | {url}")
+    print(f"DONE - {wc:,}w | {url} | featured={featured_id}")
     print("=" * 60)
 
 
