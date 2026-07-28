@@ -142,27 +142,33 @@ def ensure_category():
     if not all([WP_URL, WP_USER, WP_PASS]):
         return None
     auth = HTTPBasicAuth(WP_USER, WP_PASS)
-    r = requests.get(
-        f"{WP_URL}/wp-json/wp/v2/categories",
-        params={"slug": CATEGORY_SLUG},
-        auth=auth,
-        timeout=30,
-    )
-    if r.status_code == 200 and r.json():
-        return r.json()[0]["id"]
-    r = requests.post(
-        f"{WP_URL}/wp-json/wp/v2/categories",
-        auth=auth,
-        json={
-            "name": "Neurosciences Advances",
-            "slug": CATEGORY_SLUG,
-            "description": "Daily short updates on brain, spine, nerve, and mind advances.",
-        },
-        timeout=30,
-    )
-    if r.status_code in (200, 201):
-        return r.json()["id"]
-    print(f"Category create warn: {r.status_code} {r.text[:200]}")
+    for attempt in range(1, 5):
+        try:
+            r = requests.get(
+                f"{WP_URL}/wp-json/wp/v2/categories",
+                params={"slug": CATEGORY_SLUG},
+                auth=auth,
+                timeout=45,
+            )
+            if r.status_code == 200 and r.json():
+                return r.json()[0]["id"]
+            r = requests.post(
+                f"{WP_URL}/wp-json/wp/v2/categories",
+                auth=auth,
+                json={
+                    "name": "Neurosciences Advances",
+                    "slug": CATEGORY_SLUG,
+                    "description": "Daily short updates on brain, spine, nerve, and mind advances.",
+                },
+                timeout=45,
+            )
+            if r.status_code in (200, 201):
+                return r.json()["id"]
+            print(f"Category attempt {attempt} warn: {r.status_code} {r.text[:200]}")
+        except Exception as exc:
+            print(f"Category attempt {attempt} exception: {exc}")
+        time.sleep(8 * attempt)
+    print("Category ensure failed after retries — publishing without category")
     return None
 
 
