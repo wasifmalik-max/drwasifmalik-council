@@ -19,7 +19,7 @@ WP_URL = os.environ.get("WP_URL", "https://drwasifmalik.com").rstrip("/")
 WP_USER = os.environ.get("WP_USERNAME", "")
 WP_PASS = os.environ.get("WP_APP_PASSWORD", "")
 GROK_MODEL = os.environ.get("GROK_CONTENT_MODEL", "grok-4.5")
-PUBLISH_MODE = os.environ.get("PUBLISH_MODE", "draft").lower()  # draft safer by default
+PUBLISH_MODE = os.environ.get("PUBLISH_MODE", "publish").lower()  # live by default; set draft to stage
 DRY_RUN = "--dry-run" in sys.argv or os.environ.get("DRY_RUN", "").lower() in ("1", "true", "yes")
 CATEGORY_SLUG = os.environ.get("DAILY_NEWS_CATEGORY", "neurosciences-advances")
 

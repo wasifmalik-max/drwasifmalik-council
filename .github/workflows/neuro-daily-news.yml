@@ -11,12 +11,12 @@ on:
       dry_run:
         description: "Run without WordPress publish"
         required: false
-        default: true
+        default: false
         type: boolean
       publish_mode:
         description: "draft (safer) or publish"
         required: false
-        default: "draft"
+        default: "publish"
         type: string
 
 concurrency:
@@ -84,7 +84,7 @@ jobs:
           WP_URL: ${{ secrets.WP_URL }}
           WP_USERNAME: ${{ secrets.WP_USERNAME }}
           WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
-          PUBLISH_MODE: ${{ inputs.publish_mode || 'draft' }}
+          PUBLISH_MODE: ${{ inputs.publish_mode || 'publish' }}
           GROK_CONTENT_MODEL: grok-4.5
         run: |
           set -euo pipefail
@@ -92,8 +92,8 @@ jobs:
             echo "Manual DRY RUN (no WP publish)"
             python daily_neuro_news.py --dry-run | tee daily_news_run.log
           else
-            # Schedule + manual non-dry: draft by default (set publish_mode=publish to go live)
-            export PUBLISH_MODE="${PUBLISH_MODE:-draft}"
+            # Schedule + manual non-dry: PUBLISH live by default
+            export PUBLISH_MODE="${PUBLISH_MODE:-publish}"
             echo "Live path PUBLISH_MODE=$PUBLISH_MODE"
             python daily_neuro_news.py | tee daily_news_run.log
           fi
