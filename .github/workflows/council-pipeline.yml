@@ -66,12 +66,16 @@ jobs:
         run: |
           set -euo pipefail
           missing=0
-          for v in ANTHROPIC_API_KEY GROK_API_KEY WP_URL WP_USERNAME WP_APP_PASSWORD TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID GMAIL_USER GMAIL_APP_PASSWORD; do
+          # GROK is primary content model; Anthropic is optional fallback only
+          for v in GROK_API_KEY WP_URL WP_USERNAME WP_APP_PASSWORD TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID GMAIL_USER GMAIL_APP_PASSWORD; do
             if [ -z "${!v:-}" ]; then
               echo "::error::Missing required secret: $v"
               missing=1
             fi
           done
+          if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+            echo "::warning::ANTHROPIC_API_KEY unset — Claude fallback disabled (Grok-only path)"
+          fi
           if [ "$missing" -ne 0 ]; then
             exit 1
           fi

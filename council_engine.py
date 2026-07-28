@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-THE NEURO COUNCIL v2.6 STABLE
+THE NEURO COUNCIL v2.7 STABLE
 Dr. Wasif Rizwan Malik | PMDC 47983-P | drwasifmalik.com
+Primary content: Grok 4.5 (xAI). Claude optional fallback.
 Adds: WP timeout + retry + preflight checks + dry-run
 """
 
@@ -18,12 +19,12 @@ from requests.auth import HTTPBasicAuth
 
 
 # -------------------- ENV --------------------
-CLAUDE_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-if not CLAUDE_KEY:
-    print("ERROR: ANTHROPIC_API_KEY required")
+GROK_KEY = os.environ.get("GROK_API_KEY", "")
+if not GROK_KEY:
+    print("ERROR: GROK_API_KEY required (primary content model)")
     sys.exit(1)
 
-GROK_KEY = os.environ.get("GROK_API_KEY", "")
+CLAUDE_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 WP_URL = os.environ.get("WP_URL", "https://drwasifmalik.com").rstrip("/")
 WP_USER = os.environ.get("WP_USERNAME", "")
 WP_PASS = os.environ.get("WP_APP_PASSWORD", "")
@@ -50,7 +51,12 @@ AUTHOR = (
 )
 CTA = "Book Consultation: WhatsApp +923458254232 | Faraz Hospital, Bahawalpur"
 
-MODELS = [
+# Primary content model (xAI). Aliases: grok-4.5-latest, grok-build-latest
+GROK_CONTENT_MODEL = os.environ.get("GROK_CONTENT_MODEL", "grok-4.5")
+GROK_RESEARCH_MODEL = os.environ.get("GROK_RESEARCH_MODEL", "grok-4.5")
+
+# Optional Claude fallback (disabled path when ANTHROPIC_API_KEY missing/low)
+CLAUDE_MODELS = [
     "claude-sonnet-4-20250514",
     "claude-sonnet-4",
     "claude-3-7-sonnet-20250219",
@@ -166,41 +172,7 @@ def clean_pmids(content):
     return content
 
 
-def grok_research(topic):
-    if not GROK_KEY:
-        print("No Grok key")
-        return ""
-    print(f"GROK: {topic}")
-    try:
-        r = requests.post(
-            "https://api.x.ai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {GROK_KEY}", "Content-Type": "application/json"},
-            json={
-                "model": "grok-3",
-                "max_tokens": 600,
-                "temperature": 0.2,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": (
-                            f'Research "{topic}": key stats, AAN/NICE/AANS guidelines, '
-                            "3 real PubMed PMIDs, Pakistan context. 400 words max."
-                        ),
-                    }
-                ],
-            },
-            timeout=60,
-        )
-        r.raise_for_status()
-        brief = r.json()["choices"][0]["message"]["content"]
-        print(f"Grok: {len(brief.split())}w")
-        return brief
-    except Exception as exc:
-        print(f"Grok error: {exc}")
-        return ""
-
-
-def claude_generate(topic, keyword, brief):
+def article_prompts(topic, keyword, brief):
     research = f"\n\nGROK RESEARCH:\n{brief}" if brief else ""
     system_prompt = (
         f"You are author of The Neuro Council, writing as {AUTHOR}. "
@@ -227,11 +199,88 @@ META DESCRIPTION: [155 chars]
 ## Conclusion + CTA (100w)
 References: ONLY include if 100% certain they exist.
 Author: {AUTHOR} | {CTA} | Disclaimer: Educational only."""
+    return system_prompt, user_prompt
 
-    for model in MODELS:
+
+def grok_research(topic):
+    print(f"GROK RESEARCH ({GROK_RESEARCH_MODEL}): {topic}")
+    try:
+        r = requests.post(
+            "https://api.x.ai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {GROK_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": GROK_RESEARCH_MODEL,
+                "max_tokens": 600,
+                "temperature": 0.2,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": (
+                            f'Research "{topic}": key stats, AAN/NICE/AANS guidelines, '
+                            "3 real PubMed PMIDs, Pakistan context. 400 words max."
+                        ),
+                    }
+                ],
+            },
+            timeout=90,
+        )
+        r.raise_for_status()
+        brief = r.json()["choices"][0]["message"]["content"]
+        print(f"Grok research: {len(brief.split())}w")
+        return brief
+    except Exception as exc:
+        print(f"Grok research error: {exc}")
+        return ""
+
+
+def grok_generate(topic, keyword, brief):
+    """Primary content generation via xAI Grok 4.5."""
+    system_prompt, user_prompt = article_prompts(topic, keyword, brief)
+    for attempt in range(2):
+        try:
+            print(f"GROK CONTENT: {GROK_CONTENT_MODEL} attempt {attempt + 1}")
+            r = requests.post(
+                "https://api.x.ai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {GROK_KEY}", "Content-Type": "application/json"},
+                json={
+                    "model": GROK_CONTENT_MODEL,
+                    "max_tokens": 4096,
+                    "temperature": 0.4,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                },
+                timeout=180,
+            )
+            if r.status_code == 200:
+                text = r.json()["choices"][0]["message"]["content"]
+                print(f"SUCCESS: {len(text.split())}w | {GROK_CONTENT_MODEL}")
+                return clean_pmids(text)
+
+            print(f"Grok content error {r.status_code}: {r.text[:200]}")
+            if r.status_code in (400, 404):
+                break
+        except requests.exceptions.ReadTimeout:
+            print("Grok content timeout, retrying...")
+            time.sleep(10)
+        except Exception as exc:
+            print(f"Grok content error: {exc}")
+            break
+    return None
+
+
+def claude_generate(topic, keyword, brief):
+    """Optional Anthropic fallback — skipped when key missing or all models fail."""
+    if not CLAUDE_KEY:
+        print("Claude fallback skipped: ANTHROPIC_API_KEY not set")
+        return None
+
+    system_prompt, user_prompt = article_prompts(topic, keyword, brief)
+    for model in CLAUDE_MODELS:
         for attempt in range(2):
             try:
-                print(f"CLAUDE: {model} attempt {attempt + 1}")
+                print(f"CLAUDE FALLBACK: {model} attempt {attempt + 1}")
                 r = requests.post(
                     "https://api.anthropic.com/v1/messages",
                     headers={
@@ -252,7 +301,7 @@ Author: {AUTHOR} | {CTA} | Disclaimer: Educational only."""
                     print(f"SUCCESS: {len(text.split())}w | {model}")
                     return clean_pmids(text)
 
-                print(f"Error {r.status_code}: {r.text[:150]}")
+                print(f"Claude error {r.status_code}: {r.text[:150]}")
                 if r.status_code in (400, 404):
                     break
             except requests.exceptions.ReadTimeout:
@@ -262,7 +311,19 @@ Author: {AUTHOR} | {CTA} | Disclaimer: Educational only."""
                 print(f"Claude error: {exc}")
                 break
 
-    print("ERROR: All Claude models failed")
+    print("Claude fallback exhausted")
+    return None
+
+
+def generate_content(topic, keyword, brief):
+    content = grok_generate(topic, keyword, brief)
+    if content:
+        return content
+    print("Primary Grok generation failed; trying Claude fallback...")
+    content = claude_generate(topic, keyword, brief)
+    if content:
+        return content
+    print("ERROR: All content models failed (Grok primary + Claude fallback)")
     sys.exit(1)
 
 
@@ -338,9 +399,10 @@ def notify(subject, body):
 
 def main():
     print("=" * 60)
-    print("THE NEURO COUNCIL v2.6 STABLE")
+    print("THE NEURO COUNCIL v2.7 STABLE")
     print(datetime.now().strftime("%A %d %B %Y %H:%M PKT"))
     print(f"Mode: {PUBLISH_MODE}")
+    print(f"Primary model: {GROK_CONTENT_MODEL} | Claude fallback: {bool(CLAUDE_KEY)}")
     print("=" * 60)
 
     preflight()
@@ -350,7 +412,7 @@ def main():
     print(f"Topic: {topic}")
 
     brief = grok_research(topic)
-    content = claude_generate(topic, keyword, brief)
+    content = generate_content(topic, keyword, brief)
 
     wc = len(content.split())
     print(f"Generated: {wc:,}w")
