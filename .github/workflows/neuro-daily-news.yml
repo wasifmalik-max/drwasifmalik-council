@@ -1,0 +1,125 @@
+name: Neurosciences Daily News
+
+# SEPARATE from Monday Neuro Council Weekly Pipeline.
+# Additive only — does NOT modify council-pipeline.yml or keepalive.yml.
+
+on:
+  schedule:
+    - cron: "30 6 * * *" # Daily 06:30 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run without WordPress publish"
+        required: false
+        default: true
+        type: boolean
+      publish_mode:
+        description: "draft (safer) or publish"
+        required: false
+        default: "draft"
+        type: string
+
+concurrency:
+  group: neuro-daily-news
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  PYTHONUNBUFFERED: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  daily-news:
+    name: Generate Daily Neurosciences Brief
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Validate secrets
+        shell: bash
+        env:
+          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+          WP_URL: ${{ secrets.WP_URL }}
+          WP_USERNAME: ${{ secrets.WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for v in GROK_API_KEY WP_URL WP_USERNAME WP_APP_PASSWORD; do
+            if [ -z "${!v:-}" ]; then
+              echo "::error::Missing required secret: $v"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install requests
+
+      - name: Run daily neurosciences news
+        shell: bash
+        env:
+          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+          WP_URL: ${{ secrets.WP_URL }}
+          WP_USERNAME: ${{ secrets.WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+          PUBLISH_MODE: ${{ inputs.publish_mode || 'draft' }}
+          GROK_CONTENT_MODEL: grok-4.5
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "Manual DRY RUN (no WP publish)"
+            python daily_neuro_news.py --dry-run | tee daily_news_run.log
+          else
+            # Schedule + manual non-dry: draft by default (set publish_mode=publish to go live)
+            export PUBLISH_MODE="${PUBLISH_MODE:-draft}"
+            echo "Live path PUBLISH_MODE=$PUBLISH_MODE"
+            python daily_neuro_news.py | tee daily_news_run.log
+          fi
+
+      - name: Upload run log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-news-log-${{ github.run_id }}
+          path: |
+            daily_news_run.log
+            council_output/daily_news_*.md
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Commit daily output if changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Neuro Daily News Bot"
+          git config user.email "bot@drwasifmalik.com"
+          git add council_output/daily_news_*.md 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No daily output to commit."
+            exit 0
+          fi
+          git commit -m "Daily neurosciences news $(date -u '+%Y-%m-%d')"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"

@@ -38,5 +38,16 @@ GitHub → Actions → Neuro Council Weekly Pipeline → Run workflow
 
 Optionally override the topic and enable **dry_run** to skip WordPress publish.
 
+## Daily Neurosciences News (separate)
+
+Lightweight **daily** short briefs on brain / spine / nerve / mind advances.
+
+- Workflow: `.github/workflows/neuro-daily-news.yml`
+- Script: `daily_neuro_news.py`
+- Default publish mode: **draft** (safer). Flip `publish_mode` to `publish` when ready.
+- Does **not** replace or modify the Monday weekly council pipeline or keepalive.
+
+Manual dry-run: Actions → Neurosciences Daily News → Run workflow → `dry_run=true`.
+
 ---
 *drwasifmalik.com | WhatsApp +923458254232*
