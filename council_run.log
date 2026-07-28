@@ -1,24 +1,26 @@
 ============================================================
-THE NEURO COUNCIL v2.6 STABLE
-Monday 15 June 2026 07:21 PKT
+THE NEURO COUNCIL v2.7 STABLE
+Tuesday 28 July 2026 14:51 PKT
 Mode: publish
+Primary model: grok-4.5 | Claude fallback: True
 ============================================================
 CWD: /home/runner/work/drwasifmalik-council/drwasifmalik-council
 SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engine.py
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
-Dry Run: False
-Topic: Myelomeningocele: what parents must know from day one
-GROK: Myelomeningocele: what parents must know from day one
-Grok: 194w
-CLAUDE: claude-sonnet-4-20250514 attempt 1
-SUCCESS: 1405w | claude-sonnet-4-20250514
-Generated: 1,405w
-Saved: council_output/20260615_0722_myelomeningocele-what-parents-must-know-.md
-WP precheck OK: HTTP 200 (attempt 1)
-WP publish success (attempt 1): https://drwasifmalik.com/myelomeningocele-what-parents-must-know-from-day-one/
-Gmail sent
-Telegram sent
+Dry Run: True
+Topic: Smoke test: Grok 4.5 primary generation
+GROK RESEARCH (grok-4.5): Smoke test: Grok 4.5 primary generation
+Grok research: 168w
+GROK CONTENT: grok-4.5 attempt 1
+SUCCESS: 1257w | grok-4.5
+Removed unverified PMID: 25651212
+Removed unverified PMID: 29748316
+Removed unverified PMID: 30857957
+Removed unverified PMID: 25651212
+Generated: 1,269w
+Saved: council_output/20260728_1453_smoke-test-grok-4-5-primary-generation.md
+DRY RUN enabled: skipping WordPress publish and notifications.
 ============================================================
-DONE - 1,405w | https://drwasifmalik.com/myelomeningocele-what-parents-must-know-from-day-one/
+DONE - 1,269w | dry-run (not published)
 ============================================================
