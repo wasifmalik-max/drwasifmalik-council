@@ -1,0 +1,15 @@
+# Tenecteplase for Acute Ischemic Stroke Thrombolysis
+
+In high-volume emergency rooms across Pakistan, every minute saved in acute ischemic stroke care protects brain tissue and improves functional recovery. Tenecteplase, a bioengineered thrombolytic given as a single intravenous bolus, is emerging as a practical alternative to traditional alteplase infusions, aligning with evolving global stroke guidelines and offering clear operational advantages for resource-stretched teams.
+
+## What changed / Why it matters
+Recent multicenter evidence and updated international recommendations increasingly support tenecteplase (typically 0.25 mg/kg, maximum 25 mg) as non-inferior—and in some large-vessel occlusion settings potentially preferable—to alteplase for eligible patients within the standard thrombolysis window. The key practical shift is administration: a 5- to 10-second bolus versus a one-hour alteplase infusion. This simplifies logistics, reduces nursing time, lowers the risk of dosing errors or infusion interruptions, and accelerates door-to-needle times—critical in busy Pakistani ERs where staff and monitored beds are limited. Cost-efficiency further strengthens the case; many centers report favorable acquisition and workflow economics compared with alteplase, especially when factoring in shorter monitored infusion periods. For neurosurgical and stroke teams coordinating with interventional services, faster thrombolysis also streamlines transfer decisions for potential endovascular therapy. Adoption still requires strict adherence to established eligibility criteria, blood-pressure control, and hemorrhage surveillance protocols identical to those used with alteplase. Local pharmacy approval, staff training, and quality-registry tracking remain essential before routine switch-over.
+
+## Patient takeaway
+If you or a family member experiences sudden face droop, arm weakness, or speech difficulty, call emergency services immediately—thrombolysis eligibility is time-dependent. Tenecteplase does not change the need for rapid hospital arrival or imaging; it simply offers stroke teams a faster way to deliver clot-dissolving treatment once you qualify. Discuss any prior bleeding risks, recent surgery, or anticoagulant use with the attending physicians.  
+جلدی ہسپتال پہنچنا سب سے اہم ہے تاکہ بروقت علاج ممکن ہو سکے۔
+
+**Disclaimer:** This post is for educational purposes only and does not constitute individualized medical advice or diagnosis. Treatment decisions must be made by qualified clinicians according to current guidelines, imaging, and patient-specific factors.
+
+**Book consultation:** https://rx.drwasifmalik.com | WhatsApp +923458254232  
+Dr. Wasif Rizwan Malik | MBBS, FCPS (Neurosurgery) | PMDC 47983-P | Consultant Neurosurgeon, Faraz Hospital, Bahawalpur.
