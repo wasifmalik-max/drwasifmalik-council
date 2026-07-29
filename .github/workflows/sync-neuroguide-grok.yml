@@ -1,0 +1,33 @@
+name: Sync NeuroGuide Grok Key
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push Grok key to WordPress NeuroGuide
+        env:
+          GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+          NG_WP_CONFIG_TOKEN: ${{ secrets.NG_WP_CONFIG_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GROK_API_KEY:-}" ]; then
+            echo "GROK_API_KEY secret missing"
+            exit 1
+          fi
+          if [ -z "${NG_WP_CONFIG_TOKEN:-}" ]; then
+            echo "NG_WP_CONFIG_TOKEN secret missing"
+            exit 1
+          fi
+          RESP=$(curl -sS -X POST "https://drwasifmalik.com/wp-json/neuroguide/v1/configure" \
+            -H "Content-Type: application/json" \
+            -H "X-NG-Config-Token: ${NG_WP_CONFIG_TOKEN}" \
+            -d "{\"grok_key\":\"${GROK_API_KEY}\",\"enabled\":true,\"voice\":true,\"default_lang\":\"UR\"}")
+          echo "configure response: ${RESP}"
+          echo "${RESP}" | grep -q '"has_grok":true'
+          HEALTH=$(curl -sS "https://drwasifmalik.com/wp-json/neuroguide/v1/health")
+          echo "health: ${HEALTH}"
+          echo "${HEALTH}" | grep -q '"has_grok":true'
+          echo "NeuroGuide Grok sync OK"
