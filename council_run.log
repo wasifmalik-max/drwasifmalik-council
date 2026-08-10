@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.7 STABLE
-Tuesday 28 July 2026 14:51 PKT
+Monday 10 August 2026 03:54 PKT
 Mode: publish
 Primary model: grok-4.5 | Claude fallback: True
 ============================================================
@@ -8,19 +8,23 @@ CWD: /home/runner/work/drwasifmalik-council/drwasifmalik-council
 SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engine.py
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
-Dry Run: True
-Topic: Smoke test: Grok 4.5 primary generation
-GROK RESEARCH (grok-4.5): Smoke test: Grok 4.5 primary generation
-Grok research: 168w
+Dry Run: False
+Topic: How to prepare for FCPS neurosurgery exams
+GROK RESEARCH (grok-4.5): How to prepare for FCPS neurosurgery exams
+Grok research: 273w
 GROK CONTENT: grok-4.5 attempt 1
-SUCCESS: 1257w | grok-4.5
-Removed unverified PMID: 25651212
-Removed unverified PMID: 29748316
-Removed unverified PMID: 30857957
-Removed unverified PMID: 25651212
-Generated: 1,269w
-Saved: council_output/20260728_1453_smoke-test-grok-4-5-primary-generation.md
-DRY RUN enabled: skipping WordPress publish and notifications.
+SUCCESS: 1387w | grok-4.5
+Removed unverified PMID: 30825499
+Removed unverified PMID: 29243976
+Removed unverified PMID: 26438525
+Generated: 1,399w
+Saved: council_output/20260810_0355_how-to-prepare-for-fcps-neurosurgery-exa.md
+image_policy: generating featured visual for: How to prepare for FCPS neurosurgery exams
+image_policy: uploaded media id=2477 (ai-featured-how-to-prepare-for-fcps-neurosurgery-exa-1786334134.png)
+WP precheck OK: HTTP 200 (attempt 1)
+WP publish success (attempt 1): https://drwasifmalik.com/how-to-prepare-for-fcps-neurosurgery-exams/
+Gmail sent
+Telegram sent
 ============================================================
-DONE - 1,269w | dry-run (not published)
+DONE - 1,399w | https://drwasifmalik.com/how-to-prepare-for-fcps-neurosurgery-exams/ | featured=2477
 ============================================================
