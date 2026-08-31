@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.7 STABLE
-Monday 17 August 2026 02:58 PKT
+Monday 31 August 2026 08:09 PKT
 Mode: publish
 Primary model: grok-4.5 | Claude fallback: True
 ============================================================
@@ -9,23 +9,19 @@ SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engi
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
 Dry Run: False
-Topic: Latest advances in minimally invasive spine surgery
-GROK RESEARCH (grok-4.5): Latest advances in minimally invasive spine surgery
-Grok research: 267w
+Topic: Management of acute ischemic stroke
+GROK RESEARCH (grok-4.5): Management of acute ischemic stroke
+Grok research: 272w
 GROK CONTENT: grok-4.5 attempt 1
-SUCCESS: 1370w | grok-4.5
-Removed unverified PMID: 33002945
-Removed unverified PMID: 30320681
-Removed unverified PMID: 32032094
-Removed unverified PMID: 33002945
-Generated: 1,382w
-Saved: council_output/20260817_0300_latest-advances-in-minimally-invasive-sp.md
-image_policy: generating featured visual for: Latest advances in minimally invasive spine surgery
-image_policy: uploaded media id=2601 (ai-featured-latest-advances-in-minimally-invasive-sp-1786935618.png)
+SUCCESS: 1359w | grok-4.5
+Generated: 1,359w
+Saved: council_output/20260831_0810_management-of-acute-ischemic-stroke.md
+image_policy: generating featured visual for: Management of acute ischemic stroke
+image_policy: uploaded media id=2677 (ai-featured-management-of-acute-ischemic-stroke-1788163862.png)
 WP precheck OK: HTTP 200 (attempt 1)
-WP publish success (attempt 1): https://drwasifmalik.com/latest-advances-in-minimally-invasive-spine-surgery/
+WP publish success (attempt 1): https://drwasifmalik.com/management-of-acute-ischemic-stroke/
 Gmail sent
 Telegram sent
 ============================================================
-DONE - 1,382w | https://drwasifmalik.com/latest-advances-in-minimally-invasive-spine-surgery/ | featured=2601
+DONE - 1,359w | https://drwasifmalik.com/management-of-acute-ischemic-stroke/ | featured=2677
 ============================================================
