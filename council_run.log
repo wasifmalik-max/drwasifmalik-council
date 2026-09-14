@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.7 STABLE
-Monday 07 September 2026 07:02 PKT
+Monday 14 September 2026 07:36 PKT
 Mode: publish
 Primary model: grok-4.5 | Claude fallback: True
 ============================================================
@@ -9,19 +9,19 @@ SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engi
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
 Dry Run: False
-Topic: Spinal cord injury emergency protocol
-GROK RESEARCH (grok-4.5): Spinal cord injury emergency protocol
-Grok research: 257w
+Topic: Lumbar disc herniation: when to operate and when to wait
+GROK RESEARCH (grok-4.5): Lumbar disc herniation: when to operate and when to wait
+Grok research: 323w
 GROK CONTENT: grok-4.5 attempt 1
-SUCCESS: 1529w | grok-4.5
-Generated: 1,529w
-Saved: council_output/20260907_0704_spinal-cord-injury-emergency-protocol.md
-image_policy: generating featured visual for: Spinal cord injury emergency protocol
-image_policy: uploaded media id=2760 (ai-featured-spinal-cord-injury-emergency-protocol-1788764647.png)
+SUCCESS: 1193w | grok-4.5
+Generated: 1,193w
+Saved: council_output/20260914_0737_lumbar-disc-herniation-when-to-operate-a.md
+image_policy: generating featured visual for: Lumbar disc herniation: when to operate and when to wait
+image_policy: uploaded media id=2807 (ai-featured-lumbar-disc-herniation-when-to-operate-a-1789371451.png)
 WP precheck OK: HTTP 200 (attempt 1)
-WP publish success (attempt 1): https://drwasifmalik.com/spinal-cord-injury-emergency-protocol/
+WP publish success (attempt 1): https://drwasifmalik.com/lumbar-disc-herniation-when-to-operate-and-when-to-wait/
 Gmail sent
 Telegram sent
 ============================================================
-DONE - 1,529w | https://drwasifmalik.com/spinal-cord-injury-emergency-protocol/ | featured=2760
+DONE - 1,193w | https://drwasifmalik.com/lumbar-disc-herniation-when-to-operate-and-when-to-wait/ | featured=2807
 ============================================================
