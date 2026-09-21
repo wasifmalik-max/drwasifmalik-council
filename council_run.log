@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.7 STABLE
-Monday 14 September 2026 07:36 PKT
+Monday 21 September 2026 07:40 PKT
 Mode: publish
 Primary model: grok-4.5 | Claude fallback: True
 ============================================================
@@ -9,19 +9,19 @@ SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engi
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
 Dry Run: False
-Topic: Lumbar disc herniation: when to operate and when to wait
-GROK RESEARCH (grok-4.5): Lumbar disc herniation: when to operate and when to wait
-Grok research: 323w
+Topic: Brain tumour: the headache you must not ignore
+GROK RESEARCH (grok-4.5): Brain tumour: the headache you must not ignore
+Grok research: 247w
 GROK CONTENT: grok-4.5 attempt 1
-SUCCESS: 1193w | grok-4.5
-Generated: 1,193w
-Saved: council_output/20260914_0737_lumbar-disc-herniation-when-to-operate-a.md
-image_policy: generating featured visual for: Lumbar disc herniation: when to operate and when to wait
-image_policy: uploaded media id=2807 (ai-featured-lumbar-disc-herniation-when-to-operate-a-1789371451.png)
+SUCCESS: 1541w | grok-4.5
+Generated: 1,541w
+Saved: council_output/20260921_0741_brain-tumour-the-headache-you-must-not-i.md
+image_policy: generating featured visual for: Brain tumour: the headache you must not ignore
+image_policy: uploaded media id=2867 (ai-featured-brain-tumour-the-headache-you-must-not-i-1789976501.png)
 WP precheck OK: HTTP 200 (attempt 1)
-WP publish success (attempt 1): https://drwasifmalik.com/lumbar-disc-herniation-when-to-operate-and-when-to-wait/
+WP publish success (attempt 1): https://drwasifmalik.com/brain-tumour-the-headache-you-must-not-ignore/
 Gmail sent
 Telegram sent
 ============================================================
-DONE - 1,193w | https://drwasifmalik.com/lumbar-disc-herniation-when-to-operate-and-when-to-wait/ | featured=2807
+DONE - 1,541w | https://drwasifmalik.com/brain-tumour-the-headache-you-must-not-ignore/ | featured=2867
 ============================================================
