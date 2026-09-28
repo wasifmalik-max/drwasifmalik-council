@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.7 STABLE
-Monday 21 September 2026 07:40 PKT
+Monday 28 September 2026 08:16 PKT
 Mode: publish
 Primary model: grok-4.5 | Claude fallback: True
 ============================================================
@@ -9,19 +9,19 @@ SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engi
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
 Dry Run: False
-Topic: Brain tumour: the headache you must not ignore
-GROK RESEARCH (grok-4.5): Brain tumour: the headache you must not ignore
-Grok research: 247w
+Topic: Cervical myelopathy: the silent killer of hand function
+GROK RESEARCH (grok-4.5): Cervical myelopathy: the silent killer of hand function
+Grok research: 265w
 GROK CONTENT: grok-4.5 attempt 1
-SUCCESS: 1541w | grok-4.5
-Generated: 1,541w
-Saved: council_output/20260921_0741_brain-tumour-the-headache-you-must-not-i.md
-image_policy: generating featured visual for: Brain tumour: the headache you must not ignore
-image_policy: uploaded media id=2867 (ai-featured-brain-tumour-the-headache-you-must-not-i-1789976501.png)
+SUCCESS: 1400w | grok-4.5
+Generated: 1,400w
+Saved: council_output/20260928_0817_cervical-myelopathy-the-silent-killer-of.md
+image_policy: generating featured visual for: Cervical myelopathy: the silent killer of hand function
+image_policy: uploaded media id=2912 (ai-featured-cervical-myelopathy-the-silent-killer-of-1790583484.png)
 WP precheck OK: HTTP 200 (attempt 1)
-WP publish success (attempt 1): https://drwasifmalik.com/brain-tumour-the-headache-you-must-not-ignore/
+WP publish success (attempt 1): https://drwasifmalik.com/cervical-myelopathy-the-silent-killer-of-hand-function/
 Gmail sent
 Telegram sent
 ============================================================
-DONE - 1,541w | https://drwasifmalik.com/brain-tumour-the-headache-you-must-not-ignore/ | featured=2867
+DONE - 1,400w | https://drwasifmalik.com/cervical-myelopathy-the-silent-killer-of-hand-function/ | featured=2912
 ============================================================
