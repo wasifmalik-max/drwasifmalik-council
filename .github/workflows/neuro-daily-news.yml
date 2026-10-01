@@ -121,5 +121,7 @@ jobs:
             exit 0
           fi
           git commit -m "Daily neurosciences news $(date -u '+%Y-%m-%d')"
-          git pull --rebase origin "${GITHUB_REF_NAME}"
+          # Importing the publishers rewrites any tracked bytecode. Autostash
+          # keeps that incidental dirt from aborting the rebase before push.
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
           git push origin HEAD:"${GITHUB_REF_NAME}"
