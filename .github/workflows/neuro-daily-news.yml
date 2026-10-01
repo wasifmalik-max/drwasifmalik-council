@@ -92,9 +92,10 @@ jobs:
             echo "Manual DRY RUN (no WP publish)"
             python daily_neuro_news.py --dry-run | tee daily_news_run.log
           else
-            # Schedule + manual non-dry: PUBLISH live by default
+          # Live path: exactly one calendar topic → one WP post
             export PUBLISH_MODE="${PUBLISH_MODE:-publish}"
-            echo "Live path PUBLISH_MODE=$PUBLISH_MODE"
+            export DAILY_FEED_HINT="${DAILY_FEED_HINT:-1}"
+            echo "Live path PUBLISH_MODE=$PUBLISH_MODE (single daily upload from 365 calendar)"
             python daily_neuro_news.py | tee daily_news_run.log
           fi
 

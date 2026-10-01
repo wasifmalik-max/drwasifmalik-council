@@ -44,8 +44,29 @@ Lightweight **daily** short briefs on brain / spine / nerve / mind advances.
 
 - Workflow: `.github/workflows/neuro-daily-news.yml`
 - Script: `daily_neuro_news.py`
+- **Hard rule: Day N → exactly ONE calendar topic → exactly ONE upload** (never batch multiple calendar topics the same day)
+- Topic source: `council_output/neurosurgery_365_calendar.json` via `topic_of_the_day.py`
+- **Dating:** Day 1 = **2026-10-02** (Asia/Karachi), through Day 365 = 2027-10-01; after that the 365 list wraps
+- Soft RSS hint: if feeds strongly match today’s topic, use the **best single** item as a research hint; otherwise Grok writes a practice brief on the calendar topic alone. Still one post.
 - Default publish mode: **publish** (live). Scheduled daily runs go live automatically.
 - Does **not** replace or modify the Monday weekly council pipeline or keepalive.
+
+### 365 practice calendar
+
+| Artifact | Path |
+|---|---|
+| JSON (source of truth) | `council_output/neurosurgery_365_calendar.json` |
+| Markdown index | `neurosurgery_365_topics.md` |
+| Seed builder | `build_365_seed_calendar.py` |
+| Grok authenticity (resumable batches) | `grok_authenticate_calendar.py` |
+| Day picker | `topic_of_the_day.py` |
+
+```bash
+python topic_of_the_day.py          # print today's single topic
+python daily_neuro_news.py --dry-run
+python grok_authenticate_calendar.py --batch-size 35   # resume-safe polish
+python compile_365_markdown.py
+```
 
 Manual dry-run: Actions → Neurosciences Daily News → Run workflow → `dry_run=true` (optional staging).
 

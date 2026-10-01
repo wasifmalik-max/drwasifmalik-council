@@ -3,13 +3,20 @@
 Daily Neurosciences News — lightweight Grok-powered posts.
 SEPARATE from Monday Neuro Council Weekly Pipeline.
 Dr. Wasif Rizwan Malik | drwasifmalik.com
+
+HARD RULE: exactly ONE calendar topic → ONE research digest upload per day.
+Topic source: neurosurgery_365_calendar.json via topic_of_the_day.py
+(Day 1 = 2026-10-02 PKT). Optional RSS hinting may enrich the brief, but
+never publishes a second post or a different calendar day.
 """
 
 import os
 import re
 import sys
 import time
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -21,6 +28,7 @@ from image_policy import (
     author_byline_html,
     scrub_forbidden_featured,
 )
+from topic_of_the_day import format_topic_brief, get_today_topic
 
 GROK_KEY = os.environ.get("GROK_API_KEY", "")
 WP_URL = os.environ.get("WP_URL", "https://drwasifmalik.com").rstrip("/")
@@ -30,12 +38,22 @@ GROK_MODEL = os.environ.get("GROK_CONTENT_MODEL", "grok-4.5")
 PUBLISH_MODE = os.environ.get("PUBLISH_MODE", "publish").lower()  # live by default; set draft to stage
 DRY_RUN = "--dry-run" in sys.argv or os.environ.get("DRY_RUN", "").lower() in ("1", "true", "yes")
 CATEGORY_SLUG = os.environ.get("DAILY_NEWS_CATEGORY", "neurosciences-advances")
+# Soft RSS enrichment around today's single calendar topic (never multi-post)
+USE_FEED_HINT = os.environ.get("DAILY_FEED_HINT", "1").lower() in ("1", "true", "yes")
+MAX_UPLOADS_PER_DAY = 1
 
 AUTHOR = (
     "Dr. Wasif Rizwan Malik | MBBS, FCPS (Neurosurgery) | PMDC 47983-P | "
     "Consultant Neurosurgeon, Faraz Hospital, Bahawalpur"
 )
 CTA = "Book consultation: https://rx.drwasifmalik.com | WhatsApp +923458254232"
+
+FEED_URLS = [
+    "https://www.sciencedaily.com/rss/mind_brain/neuroscience.xml",
+    "https://www.sciencedaily.com/rss/health_medicine/stroke.xml",
+    "https://www.sciencedaily.com/rss/health_medicine/nervous_system.xml",
+    "https://www.sciencedaily.com/rss/mind_brain/brain_injury.xml",
+]
 
 
 def die(msg, code=1):
@@ -62,38 +80,116 @@ def grok_chat(messages, max_tokens=1200, temperature=0.4):
     return r.json()["choices"][0]["message"]["content"].strip()
 
 
+def _tokenize(text: str) -> set[str]:
+    return {t for t in re.findall(r"[a-z0-9]+", (text or "").lower()) if len(t) > 3}
+
+
+def fetch_feed_items(limit_per_feed: int = 12) -> list[dict]:
+    items = []
+    for url in FEED_URLS:
+        try:
+            r = requests.get(url, timeout=25, headers={"User-Agent": "NeuroCouncilDaily/1.0"})
+            if r.status_code != 200:
+                continue
+            root = ET.fromstring(r.content)
+            for item in root.findall(".//item")[:limit_per_feed]:
+                title = (item.findtext("title") or "").strip()
+                link = (item.findtext("link") or "").strip()
+                desc = (item.findtext("description") or "").strip()
+                desc = re.sub(r"<[^>]+>", " ", desc)
+                desc = re.sub(r"\s+", " ", desc).strip()[:400]
+                if title:
+                    items.append({"title": title, "link": link, "summary": desc, "source": url})
+        except Exception as exc:
+            print(f"Feed warn {urlparse(url).netloc}: {exc}")
+    return items
+
+
+def best_feed_match(calendar_topic: dict, items: list[dict]) -> dict | None:
+    """Pick at most ONE best RSS item matching today's calendar topic; else None."""
+    if not items:
+        return None
+    keys = _tokenize(calendar_topic.get("search_keywords", "")) | _tokenize(
+        calendar_topic.get("topic", "")
+    )
+    scored = []
+    for it in items:
+        blob = _tokenize(it["title"]) | _tokenize(it.get("summary", ""))
+        score = len(keys & blob)
+        if score:
+            scored.append((score, it))
+    if not scored:
+        return None
+    scored.sort(key=lambda x: x[0], reverse=True)
+    best_score, best = scored[0]
+    if best_score < 2:
+        return None
+    best = dict(best)
+    best["match_score"] = best_score
+    return best
+
+
 def pick_topic():
-    """Ask Grok for one hot/trendy brain/spine/nerve/mind topic for today."""
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    prompt = f"""Today is {today} UTC.
-Propose ONE hot, trendy, clinically relevant neurosciences topic for a short daily news brief
-covering brain, spine, nerves, or mind/neuropsychiatry advances.
-Return ONLY this format (no markdown fences):
-TOPIC: <concise title under 70 chars>
-ANGLE: <one sentence hook for patients/clinicians in Pakistan context>
-KEYWORDS: <3 comma-separated SEO keywords>
-Avoid sensationalism and fake breakthroughs. Prefer real guideline/device/trial themes."""
-    text = grok_chat([{"role": "user", "content": prompt}], max_tokens=250, temperature=0.5)
-    topic = re.search(r"TOPIC:\s*(.+)", text)
-    angle = re.search(r"ANGLE:\s*(.+)", text)
-    keys = re.search(r"KEYWORDS:\s*(.+)", text)
+    """
+    Exactly ONE topic for today from the 365 calendar (PKT date).
+    Soft-optional: attach a single best RSS hint if feeds align; otherwise
+    Grok writes a research-oriented brief on the calendar topic alone.
+    """
+    cal = get_today_topic()
+    print(format_topic_brief(cal))
+    feed_hint = None
+    if USE_FEED_HINT:
+        try:
+            feed_hint = best_feed_match(cal, fetch_feed_items())
+            if feed_hint:
+                print(
+                    f"FEED_HINT (single): score={feed_hint['match_score']} | {feed_hint['title'][:80]}"
+                )
+            else:
+                print("FEED_HINT: none strong enough — Grok research brief on calendar topic")
+        except Exception as exc:
+            print(f"FEED_HINT skipped: {exc}")
+
     return {
-        "topic": (topic.group(1).strip() if topic else text.splitlines()[0][:70]),
-        "angle": (angle.group(1).strip() if angle else ""),
-        "keywords": (keys.group(1).strip() if keys else "neurosurgery, brain, spine"),
-        "raw": text,
+        "topic": cal["topic"],
+        "angle": cal["news_angle"],
+        "keywords": cal["search_keywords"],
+        "domain": cal["domain"],
+        "day": cal["day"],
+        "date": cal["date"],
+        "practice_relevance": cal["practice_relevance"],
+        "feed_hint": feed_hint,
+        "uploads_per_day": MAX_UPLOADS_PER_DAY,
+        "raw": format_topic_brief(cal),
     }
 
 
 def write_brief(meta):
+    feed_block = ""
+    if meta.get("feed_hint"):
+        fh = meta["feed_hint"]
+        feed_block = (
+            f"\nOptional real-world news hint (use only if clinically coherent with the topic; "
+            f"do not invent citations beyond this headline):\n"
+            f"- Headline: {fh['title']}\n"
+            f"- Link: {fh.get('link', '')}\n"
+            f"- Summary: {fh.get('summary', '')}\n"
+            f"If the hint is weak or off-topic, ignore it and write a research-oriented practice brief.\n"
+        )
     prompt = f"""Write a SHORT daily neurosciences advances post (350–500 words) as {AUTHOR}.
+
+HARD CONSTRAINTS:
+- This is the SINGLE daily upload for calendar day {meta.get('day')} ({meta.get('date')}).
+- Domain: {meta.get('domain')}
+- Stay tightly on this ONE topic (do not cover multiple unrelated stories).
+- Educational research-digest style; no clickbait; no fabricated PMIDs/DOIs/trial IDs.
+- Practice relevance: {meta.get('practice_relevance', '')}
 
 Title: {meta['topic']}
 Angle: {meta['angle']}
 Keywords: {meta['keywords']}
-
+{feed_block}
 Rules:
-- Educational only; no diagnosis of individuals; no fabricated PMIDs or trial IDs.
 - Structure: H1 title, 1-paragraph hook, What changed / Why it matters, Patient takeaway, Disclaimer, CTA.
 - CTA must include: {CTA}
 - Clear, professional English; optional one Urdu sentence for accessibility.
@@ -101,7 +197,13 @@ Rules:
 Return full HTML-ready Markdown starting with # title."""
     return grok_chat(
         [
-            {"role": "system", "content": "You write concise, accurate neurosciences news for a consultant neurosurgeon website."},
+            {
+                "role": "system",
+                "content": (
+                    "You write concise, accurate neurosciences news for a consultant neurosurgeon website. "
+                    "One topic only. Prefer guideline/trial/device themes that are real; never invent citations."
+                ),
+            },
             {"role": "user", "content": prompt},
         ],
         max_tokens=1400,
@@ -226,18 +328,22 @@ def extract_title(md: str, fallback: str) -> str:
 def main():
     print("=== Daily Neurosciences News ===")
     print(f"Dry run: {DRY_RUN} | Publish mode: {PUBLISH_MODE} | Model: {GROK_MODEL}")
+    print(f"UPLOAD RULE: exactly {MAX_UPLOADS_PER_DAY} post/day from 365 calendar (PKT date)")
     os.makedirs("council_output", exist_ok=True)
 
     meta = pick_topic()
+    assert meta.get("uploads_per_day", 1) == 1
     print("TOPIC:", meta["topic"])
     print("ANGLE:", meta["angle"])
+    print(f"CALENDAR: day={meta.get('day')} date={meta.get('date')} domain={meta.get('domain')}")
 
     md = write_brief(meta)
     title = extract_title(md, meta["topic"])
     html = md_to_html(md)
     html += (
         "\n<p><em>Educational only — not a substitute for clinical consultation. "
-        f'This daily brief is separate from the weekly Neuro Council deep-dive.</em></p>\n'
+        f'This daily brief is separate from the weekly Neuro Council deep-dive. '
+        f"Calendar day {meta.get('day')} — one topic, one upload.</em></p>\n"
         f'<p><a href="https://rx.drwasifmalik.com">Book a consultation</a></p>'
     )
     # Mini author byline (small photo + credentials) — not used as featured image
@@ -248,10 +354,15 @@ def main():
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d")
     out_path = f"council_output/daily_news_{stamp}.md"
+    header = (
+        f"<!-- calendar_day={meta.get('day')} date={meta.get('date')} "
+        f"domain={meta.get('domain')} uploads=1 -->\n"
+    )
     with open(out_path, "w", encoding="utf-8") as f:
-        f.write(md)
-    print("Wrote", out_path, f"({len(md.split())}w)")
+        f.write(header + md)
+    print("Wrote", out_path, f"({len(md.split())}w) | single daily upload")
 
+    # ONE WordPress post only — never batch-publish calendar topics
     featured_id = None
     if not DRY_RUN:
         featured_id = create_ai_featured_media(title, slug_hint=title)
@@ -260,7 +371,14 @@ def main():
 
     cat_id = None if DRY_RUN else ensure_category()
     result = publish(title, html, cat_id, featured_media=featured_id)
-    print("DONE", result.get("status"), result.get("link"), "featured=", featured_id)
+    print(
+        "DONE",
+        result.get("status"),
+        result.get("link"),
+        "featured=",
+        featured_id,
+        "| uploads_today=1",
+    )
 
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
 __pycache__/
 *.py[cod]
 daily_news_run.log
+.grok_key_tmp
+*.checkpoint.json
