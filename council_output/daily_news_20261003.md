@@ -1,0 +1,17 @@
+<!-- calendar_day=2 date=2026-10-03 domain=Brain tumors uploads=1 -->
+# IDH-Mutant Glioma Surgical Timing: Early Resection Versus Surveillance
+
+For young adults who present with new seizures and a slow-growing, non-enhancing lesion that later proves to be an IDH-mutant low-grade glioma, the first counseling question is often whether to operate soon or to watch with serial MRI. Contemporary evidence has steadily moved practice away from prolonged imaging-only observation toward timely maximal safe resection when anatomy and function allow, because delayed intervention is linked to higher rates of radiographic progression, malignant transformation risk over time, and less durable seizure control.
+
+## What changed / Why it matters
+IDH-mutant diffuse gliomas (astrocytoma, IDH-mutant, and oligodendroglioma, IDH-mutant and 1p/19q-codeleted) grow slowly yet continuously. Historical “wait-and-scan” strategies were justified by perceived indolence and operative risk in eloquent cortex. Comparative institutional and population-based series, together with long-term natural-history data, have shown that early cytoreductive surgery—aiming for the largest safe resection rather than biopsy alone—is associated with longer overall survival, delayed need for salvage therapies, and lower cumulative incidence of progression to higher-grade histology than observation until unequivocal growth or new deficits. Seizure outcomes matter clinically: gross-total or near-total resection frequently reduces seizure frequency and improves the chance of Engel class I control compared with continued surveillance on antiepileptic drugs alone, especially when the epileptogenic cortex is included in a function-preserving plan. Molecular confirmation (IDH1/2 status, 1p/19q codeletion, CDKN2A/B) refines prognosis and adjuvant planning after surgery but does not reverse the surgical principle that residual tumor volume remains a dominant modifiable risk factor. Functional MRI, DTI tractography, awake mapping, and intraoperative neuromonitoring have lowered the threshold for safe early resection in language and motor corridors, which is precisely the setting of many seizure-onset low-grade lesions in adults under 40. Observation retains a role only for carefully selected, truly incidental, deep or unresectable foci after multidisciplinary review—not as the default for symptomatic, surgically accessible disease.
+
+## Patient takeaway
+If you are a young adult with seizures and a suspected low-grade IDH-mutant glioma, early referral for specialized neurosurgical assessment helps weigh MRI trajectory, seizure burden, and resectability. Early maximal safe surgery, when feasible, generally offers better long-term tumor and seizure control than open-ended imaging surveillance; final timing still depends on location, neurologic function, and shared decision-making with your team.  
+آپ کے دورے اور ایم آر آئی کی بنیاد پر جلد تخصصی مشورہ فائدہ مند ثابت ہو سکتا ہے۔
+
+## Disclaimer
+This post is an educational research digest for general information only. It is not personalized medical advice, does not establish a doctor–patient relationship, and must not replace evaluation by your treating physicians. Surgical indications, risks, and outcomes vary by individual anatomy, molecular profile, and center expertise.
+
+**Book consultation:** https://rx.drwasifmalik.com | WhatsApp +923458254232  
+Dr. Wasif Rizwan Malik | MBBS, FCPS (Neurosurgery) | PMDC 47983-P | Consultant Neurosurgeon, Faraz Hospital, Bahawalpur
