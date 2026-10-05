@@ -23,6 +23,7 @@ from requests.auth import HTTPBasicAuth
 
 from image_policy import (
     append_byline,
+    append_contact_footer,
     create_ai_featured_media,
     resolve_author_photo_url,
     author_byline_html,
@@ -46,7 +47,15 @@ AUTHOR = (
     "Dr. Wasif Rizwan Malik | MBBS, FCPS (Neurosurgery) | PMDC 47983-P | "
     "Consultant Neurosurgeon, Faraz Hospital, Bahawalpur"
 )
-CTA = "Book consultation: https://rx.drwasifmalik.com | WhatsApp +923458254232"
+# Authoritative contact roles (do not collapse into one WhatsApp number):
+# 0300 087 4232 = AI WhatsApp (booking & PA). 0345 825 4232 = emergency direct only.
+CTA = (
+    "Book online: https://rx.drwasifmalik.com | "
+    "AI WhatsApp (booking & PA, no diagnosis, no imaging brief): "
+    "https://wa.me/923000874232 (0300 087 4232) | "
+    "Emergency direct Dr Wasif (not routine booking): tel:+923458254232 (0345 825 4232)"
+)
+
 
 FEED_URLS = [
     "https://www.sciencedaily.com/rss/mind_brain/neuroscience.xml",
@@ -375,13 +384,14 @@ def main():
         "\n<p><em>Educational only — not a substitute for clinical consultation. "
         f'This daily brief is separate from the weekly Neuro Council deep-dive. '
         f"Calendar day {meta.get('day')} — one topic, one upload.</em></p>\n"
-        f'<p><a href="https://rx.drwasifmalik.com">Book a consultation</a></p>'
+        f'<p><a href="https://rx.drwasifmalik.com">Book a consultation</a></p>\n'
     )
     # Mini author byline (small photo + credentials) — not used as featured image
     if DRY_RUN:
         html = append_byline(html)
     else:
         html = html.rstrip() + "\n" + author_byline_html(resolve_author_photo_url())
+    html = append_contact_footer(html)
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d")
     out_path = f"council_output/daily_news_{stamp}.md"

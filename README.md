@@ -80,7 +80,10 @@ Shared module: `image_policy.py` (used by daily + weekly publishers).
 | Post featured / cover | AI medical/neuroscience visual via **Grok Imagine** (`/v1/images/generations`). Never doctor personal photos. No paediatric faces. |
 | Post footer | Mini author byline: name + MBBS/FCPS/PMDC + small circular photo (1606) |
 
-Booking CTAs remain `https://rx.drwasifmalik.com`.
+Booking CTAs: `https://rx.drwasifmalik.com`.
+Contact roles (do not mix):
+- **AI WhatsApp** `0300 087 4232` (`wa.me/923000874232`) — booking & PA assistant; brief lab-report notes only; does **not** diagnose; does **not** brief patients on imaging.
+- **Emergency direct** `0345 825 4232` (`tel:+923458254232`) — Dr Wasif only; **not** for routine booking.
 
 ---
-*drwasifmalik.com | WhatsApp +923458254232*
+*drwasifmalik.com | AI WhatsApp 0300 087 4232 · Emergency 0345 825 4232*

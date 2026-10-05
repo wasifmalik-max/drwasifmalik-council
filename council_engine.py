@@ -19,6 +19,7 @@ from requests.auth import HTTPBasicAuth
 
 from image_policy import (
     author_byline_html,
+    append_contact_footer,
     create_ai_featured_media,
     resolve_author_photo_url,
     scrub_forbidden_featured,
@@ -56,7 +57,13 @@ AUTHOR = (
     "Dr. Wasif Rizwan Malik | MBBS, FCPS (Neurosurgery) | PMDC 47983-P | "
     "Consultant Neurosurgeon, Faraz Hospital, Dubai Mahal Chowk, Bahawalpur"
 )
-CTA = "Book Consultation: WhatsApp +923458254232 | Faraz Hospital, Bahawalpur"
+CTA = (
+    "Book online: https://rx.drwasifmalik.com | "
+    "AI WhatsApp (booking & PA, no diagnosis, no imaging brief): "
+    "https://wa.me/923000874232 (0300 087 4232) | "
+    "Emergency direct Dr Wasif (not routine booking): tel:+923458254232 (0345 825 4232) | "
+    "Faraz Hospital, Bahawalpur"
+)
 
 # Primary content model (xAI). Aliases: grok-4.5-latest, grok-build-latest
 GROK_CONTENT_MODEL = os.environ.get("GROK_CONTENT_MODEL", "grok-4.5")
@@ -349,6 +356,7 @@ def publish_wp(title, content, status="draft", featured_media=None):
 
     print(f"WP precheck OK: {msg}")
     html = to_html(content).rstrip() + "\n" + author_byline_html(resolve_author_photo_url())
+    html = append_contact_footer(html)
     payload = {
         "title": title,
         "content": html,
