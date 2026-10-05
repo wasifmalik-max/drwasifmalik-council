@@ -282,6 +282,35 @@ def ensure_category():
     return None
 
 
+def tag_frontline_meta(post_id: int) -> None:
+    """Mark council daily posts so homepage Frontline Neuroscience can surface them."""
+    if not post_id or DRY_RUN:
+        return
+    auth = HTTPBasicAuth(WP_USER, WP_PASS)
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    payload = {
+        "meta": {
+            "_dwf_nn_generated": stamp,
+            "_dwf_nn_source": "neuro-council-daily-calendar",
+            "_dwf_nn_model": GROK_MODEL,
+            "_dwf_nn_image_model": os.environ.get("GROK_IMAGE_MODEL", "grok-imagine-image"),
+        }
+    }
+    try:
+        r = requests.post(
+            f"{WP_URL}/wp-json/wp/v2/posts/{int(post_id)}",
+            auth=auth,
+            json=payload,
+            timeout=45,
+        )
+        if r.status_code in (200, 201):
+            print(f"frontline_meta: tagged post {post_id}")
+        else:
+            print(f"frontline_meta warn: HTTP {r.status_code} {r.text[:180]}")
+    except Exception as exc:
+        print(f"frontline_meta warn: {exc}")
+
+
 def publish(title: str, html: str, cat_id, featured_media=None):
     if DRY_RUN:
         print("DRY_RUN — skip WP publish")
@@ -312,6 +341,8 @@ def publish(title: str, html: str, cat_id, featured_media=None):
                 print(f"WP {status}: id={data.get('id')} link={data.get('link')}")
                 if data.get("id"):
                     scrub_forbidden_featured(int(data["id"]))
+                    # Homepage frontline queries meta_key=_dwf_nn_generated
+                    tag_frontline_meta(int(data["id"]))
                 return data
             print(f"WP attempt {attempt} failed: {r.status_code} {r.text[:250]}")
         except Exception as exc:
