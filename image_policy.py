@@ -45,15 +45,13 @@ FORBIDDEN_FEATURED_IDS = {
 
 BYLINE_MARKER = "<!-- neuro-author-byline -->"
 
-# Standard bilingual contact footer (AI WA 0300 vs emergency 0345)
+# Monolingual EN contact footer (MU i18n swaps labels by ?lang=). Digits ALWAYS Latin 0-9.
 CONTACT_FOOTER_MARKER = "<!-- dwf-contact-footer-v1 -->"
 CONTACT_FOOTER_HTML = """<!-- dwf-contact-footer-v1 -->
 <div class="dwf-contact-footer" style="margin:28px 0 12px;padding:16px 18px;border:1px solid #c9c6c0;border-radius:12px;background:#faf8f5;max-width:760px;font-size:0.92rem;line-height:1.65;color:#3a342c">
-<p style="margin:0 0 8px;font-weight:700;color:#1a1510">Contact · رابطہ</p>
+<p style="margin:0 0 8px;font-weight:700;color:#1a1510">Contact</p>
 <p style="margin:0 0 8px"><strong>AI WhatsApp</strong> (booking &amp; PA assistant): <a href="https://wa.me/923000874232" style="color:#8a6520;font-weight:700">0300 087 4232</a> — appointments and a brief note on lab reports only. Does not diagnose. Does not interpret imaging for patients. Emergencies escalate to the doctor.</p>
-<p style="margin:0 0 8px;direction:rtl;font-family:'Noto Nastaliq Urdu',serif">AI واٹس ایپ (بکنگ و PA): <a href="https://wa.me/923000874232" style="color:#8a6520;font-weight:700">۰۳۰۰ ۰۸۷ ۴۲۳۲</a> — ملاقات اور لیب رپورٹ کا مختصر نوٹ۔ تشخیص نہیں۔ امیجنگ کی تشریح مریض کو نہیں۔ ایمرجنسی ڈاکٹر تک۔</p>
 <p style="margin:0 0 8px"><strong>Emergency</strong> — direct Dr Wasif: <a href="tel:+923458254232" style="color:#8a3a3a;font-weight:700">0345 825 4232</a> (not for routine booking)</p>
-<p style="margin:0 0 8px;direction:rtl;font-family:'Noto Nastaliq Urdu',serif">ایمرجنسی — براہِ راست ڈاکٹر واصف: <a href="tel:+923458254232" style="color:#8a3a3a;font-weight:700">۰۳۴۵ ۸۲۵ ۴۲۳۲</a> (روٹین بکنگ کے لیے نہیں)</p>
 <p style="margin:0">Online booking: <a href="https://rx.drwasifmalik.com" style="color:#8a6520;font-weight:700">rx.drwasifmalik.com</a></p>
 </div>
 """

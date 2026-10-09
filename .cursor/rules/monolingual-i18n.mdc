@@ -1,0 +1,19 @@
+---
+description: Monolingual EN/UR/AR digests + Latin contact digits for Dr Wasif site publishers
+alwaysApply: true
+---
+
+# Council / daily news — monolingual trilingual
+
+## Required for every publish
+- Generate **separate** EN, UR, and AR for titles and body. Store EN in WordPress `content`; put UR/AR in post meta (`_dwf_nn_title_ur/_ar`, `_dwf_nn_body_ur/_ar`) when tagging frontline (`_dwf_nn_generated`).
+- Never publish bilingual stacked HTML (no EN paragraph + Urdu companion in the same post body).
+- Site displays only `?lang=` — BBC/CNN style.
+
+## Contact footer
+- English-only footer in stored HTML (MU injects monolingual contact by lang).
+- Digits always Latin: `0300 087 4232` / `0345 825 4232` — never ۰۳۰۰ / ۰۳۴۵.
+- Roles: 0300 = AI WhatsApp (no diagnosis; lab brief only; no imaging). 0345 = emergency direct.
+
+## Buttons / CTAs
+- Single-language labels only.

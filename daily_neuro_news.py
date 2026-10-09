@@ -10,6 +10,7 @@ Topic source: neurosurgery_365_calendar.json via topic_of_the_day.py
 never publishes a second post or a different calendar day.
 """
 
+import json
 import os
 import re
 import sys
@@ -291,20 +292,103 @@ def ensure_category():
     return None
 
 
-def tag_frontline_meta(post_id: int) -> None:
-    """Mark council daily posts so homepage Frontline Neuroscience can surface them."""
+def _grok_trilingual_bodies(title_en: str, md_en: str) -> dict:
+    """Translate daily brief into separate UR + AR monolingual bodies (JSON)."""
+    if not GROK_KEY or not md_en.strip():
+        return {}
+    system = (
+        "You are a clinical medical translator for a neurosurgeon website. "
+        "Return STRICT JSON only with keys: title_ur, title_ar, body_ur_html, body_ar_html. "
+        "body_*_html = 3-6 plain <p> paragraphs, monolingual, no English mashup, no phone numeral localization "
+        "(if you mention phones use Latin digits 0300 087 4232 / 0345 825 4232). "
+        "Educational tone; do not invent diagnoses or numbers."
+    )
+    user = json.dumps(
+        {"title_en": title_en, "markdown_en": md_en[:6000]},
+        ensure_ascii=False,
+    )
+    try:
+        r = requests.post(
+            "https://api.x.ai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {GROK_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": GROK_MODEL,
+                "temperature": 0.15,
+                "max_tokens": 4000,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+            },
+            timeout=120,
+        )
+        r.raise_for_status()
+        text = r.json()["choices"][0]["message"]["content"].strip()
+        if "```" in text:
+            m = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
+            if m:
+                text = m.group(1).strip()
+        return json.loads(text[text.find("{") : text.rfind("}") + 1])
+    except Exception as exc:  # noqa: BLE001
+        print(f"i18n translate warn: {exc}")
+        return {}
+
+
+def _wrap_rtl_body(lang: str, title: str, inner_html: str) -> str:
+    font = (
+        "'Noto Nastaliq Urdu',serif"
+        if lang == "ur"
+        else "'Noto Naskh Arabic','Noto Sans Arabic',serif"
+    )
+    core = "سائنسی خلاصہ" if lang == "ur" else "الملخص العلمي"
+    disc = (
+        "یہ صرف تعلیمی خلاصہ ہے — ذاتی طبی مشورہ نہیں۔"
+        if lang == "ur"
+        else "موجز تعليمي فقط — ليس نصيحة طبية شخصية."
+    )
+    t = (title or "").strip()
+    body = (
+        f'<!-- dwf-neuro-news-{lang} -->'
+        f'<div class="fb-neuro-news dwf-lang-{lang}" lang="{lang}" dir="rtl" '
+        f'style="max-width:760px;font-family:{font}">'
+    )
+    if t:
+        body += f"<h2 style=\"margin:0 0 12px\">{t}</h2>"
+    body += f'<p style="margin:0 0 6px;font-size:0.78rem;color:#8a6520;font-weight:800">{core}</p>'
+    body += inner_html or ""
+    body += (
+        f'<p style="font-size:.85rem;opacity:.85;border-top:1px solid #c9c6c0;'
+        f'padding-top:12px;margin-top:16px">{disc}</p></div>'
+    )
+    return body
+
+
+def tag_frontline_meta(post_id, i18n=None):
+    """Mark council daily posts for Frontline + store separate UR/AR meta (monolingual)."""
     if not post_id or DRY_RUN:
         return
     auth = HTTPBasicAuth(WP_USER, WP_PASS)
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    payload = {
-        "meta": {
-            "_dwf_nn_generated": stamp,
-            "_dwf_nn_source": "neuro-council-daily-calendar",
-            "_dwf_nn_model": GROK_MODEL,
-            "_dwf_nn_image_model": os.environ.get("GROK_IMAGE_MODEL", "grok-imagine-image"),
-        }
+    meta = {
+        "_dwf_nn_generated": stamp,
+        "_dwf_nn_source": "neuro-council-daily-calendar",
+        "_dwf_nn_model": GROK_MODEL,
+        "_dwf_nn_image_model": os.environ.get("GROK_IMAGE_MODEL", "grok-imagine-image"),
     }
+    i18n = i18n or {}
+    if i18n.get("title_ur"):
+        meta["_dwf_nn_title_ur"] = str(i18n["title_ur"])[:200]
+    if i18n.get("title_ar"):
+        meta["_dwf_nn_title_ar"] = str(i18n["title_ar"])[:200]
+    if i18n.get("body_ur_html"):
+        meta["_dwf_nn_body_ur"] = _wrap_rtl_body(
+            "ur", str(i18n.get("title_ur") or ""), str(i18n["body_ur_html"])
+        )
+    if i18n.get("body_ar_html"):
+        meta["_dwf_nn_body_ar"] = _wrap_rtl_body(
+            "ar", str(i18n.get("title_ar") or ""), str(i18n["body_ar_html"])
+        )
+    payload = {"meta": meta}
     try:
         r = requests.post(
             f"{WP_URL}/wp-json/wp/v2/posts/{int(post_id)}",
@@ -313,14 +397,18 @@ def tag_frontline_meta(post_id: int) -> None:
             timeout=45,
         )
         if r.status_code in (200, 201):
-            print(f"frontline_meta: tagged post {post_id}")
+            print(
+                f"frontline_meta: tagged post {post_id} "
+                f"ur={'yes' if '_dwf_nn_body_ur' in meta else 'no'} "
+                f"ar={'yes' if '_dwf_nn_body_ar' in meta else 'no'}"
+            )
         else:
             print(f"frontline_meta warn: HTTP {r.status_code} {r.text[:180]}")
     except Exception as exc:
         print(f"frontline_meta warn: {exc}")
 
 
-def publish(title: str, html: str, cat_id, featured_media=None):
+def publish(title: str, html: str, cat_id, featured_media=None, i18n=None):
     if DRY_RUN:
         print("DRY_RUN — skip WP publish")
         return {"id": 0, "link": "(dry-run)", "status": "dry-run"}
@@ -350,8 +438,8 @@ def publish(title: str, html: str, cat_id, featured_media=None):
                 print(f"WP {status}: id={data.get('id')} link={data.get('link')}")
                 if data.get("id"):
                     scrub_forbidden_featured(int(data["id"]))
-                    # Homepage frontline queries meta_key=_dwf_nn_generated
-                    tag_frontline_meta(int(data["id"]))
+                    # Homepage frontline + separate UR/AR meta (never bilingual mashup)
+                    tag_frontline_meta(int(data["id"]), i18n=i18n)
                 return data
             print(f"WP attempt {attempt} failed: {r.status_code} {r.text[:250]}")
         except Exception as exc:
@@ -411,7 +499,10 @@ def main():
             print("WARN: AI featured image unavailable — publishing without doctor-face fallback")
 
     cat_id = None if DRY_RUN else ensure_category()
-    result = publish(title, html, cat_id, featured_media=featured_id)
+    i18n = {} if DRY_RUN else _grok_trilingual_bodies(title, md)
+    if i18n:
+        print("i18n: UR/AR bodies prepared for separate meta storage")
+    result = publish(title, html, cat_id, featured_media=featured_id, i18n=i18n)
     print(
         "DONE",
         result.get("status"),
