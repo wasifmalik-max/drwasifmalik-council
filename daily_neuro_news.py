@@ -202,7 +202,7 @@ Keywords: {meta['keywords']}
 Rules:
 - Structure: H1 title, 1-paragraph hook, What changed / Why it matters, Patient takeaway, Disclaimer, CTA.
 - CTA must include: {CTA}
-- Clear, professional English; optional one Urdu sentence for accessibility.
+- Clear, professional English only in this brief (monolingual EN). Do not add Urdu or Arabic sentences here — UR/AR are generated separately into post meta.
 - Do NOT claim unpublished personal surgical outcomes.
 Return full HTML-ready Markdown starting with # title."""
     return grok_chat(

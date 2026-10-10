@@ -1,14 +1,19 @@
 ---
-description: Monolingual EN/UR/AR digests + Latin contact digits for Dr Wasif site publishers
+description: Daily 365 calendar + monolingual EN/UR/AR digests + Latin contact digits
 alwaysApply: true
 ---
 
-# Council / daily news — monolingual trilingual
+# Council daily publish — one topic, monolingual trilingual
 
-## Required for every publish
-- Generate **separate** EN, UR, and AR for titles and body. Store EN in WordPress `content`; put UR/AR in post meta (`_dwf_nn_title_ur/_ar`, `_dwf_nn_body_ur/_ar`) when tagging frontline (`_dwf_nn_generated`).
-- Never publish bilingual stacked HTML (no EN paragraph + Urdu companion in the same post body).
-- Site displays only `?lang=` — BBC/CNN style.
+## Hard daily rule
+1. **Exactly ONE** 365-calendar topic → **ONE** WordPress upload per PKT day.
+   - Source: `council_output/neurosurgery_365_calendar.json` via `topic_of_the_day.py`.
+   - Day 1 = **2026-10-02** PKT; `MAX_UPLOADS_PER_DAY = 1` in `daily_neuro_news.py`.
+   - GitHub Action `neuro-daily-news.yml` runs daily; do not add multi-post loops.
+2. **Monolingual per language:** EN in `post_content`; UR/AR in separate meta (`_dwf_nn_title_ur/_ar`, `_dwf_nn_body_ur/_ar`) when tagging frontline (`_dwf_nn_generated`).
+3. **Never** bilingual stacked HTML (no EN paragraph + Urdu companion in the same post body). No “optional Urdu sentence” inside English briefs.
+4. Site displays only `?lang=` — BBC/CNN style. UR/AR meta bodies must be **RTL**.
+5. Featured images: content-faithful clinical/neuroscience visuals via image policy — never doctor personal photo as featured.
 
 ## Contact footer
 - English-only footer in stored HTML (MU injects monolingual contact by lang).
@@ -17,3 +22,7 @@ alwaysApply: true
 
 ## Buttons / CTAs
 - Single-language labels only.
+
+## Weekly cover (homepage)
+- Owned by homepage `_rotate_weekly_cover.py`. Do not rotate mid-ISO-week unless broken.
+- W41 ends Sun; next week starts Mon (e.g. W42 from 2026-10-12).
