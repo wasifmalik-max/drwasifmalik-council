@@ -8,7 +8,6 @@ Contemporary endocrine–neurosurgical pathways emphasize early postoperative co
 
 ## Patient takeaway
 If you or a family member had TSA for Cushing disease, ask for the written postoperative cortisol results, the steroid plan, and the schedule for UFC or salivary testing. Persistent high cortisol is a reason to reassess residual tumor and salvage options early—not to wait for symptoms alone. Keep stress-dose steroid instructions available until your team confirms durable remission.
-کیوشنگ کی بیماری میں آپریشن کے بعد کورٹیسول رپورٹس اور سٹیرائیڈ پلان ضرور پوچھیں تاکہ باقی بیماری یا ہارمون بحران سے بچا جا سکے۔
 
 ## Disclaimer
 This post is general educational information on established pituitary practice themes, not personalized medical advice, diagnosis, or a treatment mandate. Cushing care requires individual endocrine and neurosurgical assessment, laboratory interpretation, and imaging review by the treating team.
