@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.7 STABLE
-Monday 28 September 2026 08:16 PKT
+Monday 12 October 2026 08:41 PKT
 Mode: publish
 Primary model: grok-4.5 | Claude fallback: True
 ============================================================
@@ -9,19 +9,19 @@ SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engi
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
 Dry Run: False
-Topic: Cervical myelopathy: the silent killer of hand function
-GROK RESEARCH (grok-4.5): Cervical myelopathy: the silent killer of hand function
-Grok research: 265w
+Topic: Brain aneurysm: the worst headache of your life
+GROK RESEARCH (grok-4.5): Brain aneurysm: the worst headache of your life
+Grok research: 281w
 GROK CONTENT: grok-4.5 attempt 1
-SUCCESS: 1400w | grok-4.5
-Generated: 1,400w
-Saved: council_output/20260928_0817_cervical-myelopathy-the-silent-killer-of.md
-image_policy: generating featured visual for: Cervical myelopathy: the silent killer of hand function
-image_policy: uploaded media id=2912 (ai-featured-cervical-myelopathy-the-silent-killer-of-1790583484.png)
+SUCCESS: 1401w | grok-4.5
+Generated: 1,401w
+Saved: council_output/20261012_0842_brain-aneurysm-the-worst-headache-of-you.md
+image_policy: generating featured visual for: Brain aneurysm: the worst headache of your life
+image_policy: uploaded media id=3085 (ai-featured-brain-aneurysm-the-worst-headache-of-you-1791794578.png)
 WP precheck OK: HTTP 200 (attempt 1)
-WP publish success (attempt 1): https://drwasifmalik.com/cervical-myelopathy-the-silent-killer-of-hand-function/
+WP publish success (attempt 1): https://drwasifmalik.com/brain-aneurysm-the-worst-headache-of-your-life/
 Gmail sent
 Telegram sent
 ============================================================
-DONE - 1,400w | https://drwasifmalik.com/cervical-myelopathy-the-silent-killer-of-hand-function/ | featured=2912
+DONE - 1,401w | https://drwasifmalik.com/brain-aneurysm-the-worst-headache-of-your-life/ | featured=3085
 ============================================================
