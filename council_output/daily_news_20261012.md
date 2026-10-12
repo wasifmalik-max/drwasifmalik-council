@@ -1,0 +1,18 @@
+<!-- calendar_day=11 date=2026-10-12 domain=Brain tumors uploads=1 -->
+# Craniopharyngioma Hypothalamic-Sparing Strategies
+
+In pediatric and young-adult craniopharyngioma, the classic drive toward maximal safe resection collides with a small but critical structure: the hypothalamus. Aggressive removal when tumor invades or adheres to hypothalamic tissue can leave lasting endocrine failure, rapid-onset obesity, and cognitive or behavioral change that dominate long-term quality of life. Contemporary practice therefore reframes the goal from “as much tumor as possible” to “as much tumor as is compatible with hypothalamic integrity,” accepting planned residual disease when imaging or intraoperative findings show hypothalamic involvement and relying on adjuvant radiotherapy or careful surveillance for the remainder.
+
+## What changed / Why it matters
+Extent-of-resection targets are now stratified by preoperative and intraoperative hypothalamic risk. When the hypothalamus is clearly invaded, intentional subtotal or near-total resection that leaves a thin residual cuff is preferred over forced gross-total resection. This shift rests on consistent observational and cooperative-group experience: hypothalamic injury correlates strongly with postoperative hyperphagia, morbid obesity, panhypopituitarism, sleep–wake disruption, and reduced school or work performance—outcomes that are difficult to reverse once established. Preserving hypothalamic nuclei and vascular supply reduces the severity of these sequelae even if it leaves residual tumor that later requires fractionated or stereotactic radiotherapy. Multidisciplinary planning (neurosurgery, endocrinology, oncology, and neuropsychology) before the first operation is essential so that families understand the trade-off: a radiologically “cleaner” postoperative scan is not automatically a better functional result. For adamantinomatous and papillary subtypes alike, the same principle applies in children and young adults, because metabolic and cognitive morbidity accumulates over decades of survivorship. Intraoperative judgment, high-resolution MRI for hypothalamic grading, and avoidance of blind traction on the floor of the third ventricle are the practical tools that translate this philosophy into the operating room. The net effect is a deliberate recalibration of oncologic completeness against lifelong endocrine, weight, and cognitive health.
+
+## Patient takeaway
+If you or your child faces craniopharyngioma surgery, ask explicitly how the team will protect the hypothalamus, what residual tumor is acceptable, and how endocrine and weight monitoring will be organized after surgery. Long-term quality of life often hinges more on hypothalamic sparing than on the last millimeter of tumor removal.
+
+## Disclaimer
+This post is for general educational purposes only and does not constitute personalized medical advice, diagnosis, or a treatment recommendation. Management decisions require individual clinical and imaging assessment by the treating neurosurgical and endocrine team.
+
+## CTA
+Book online: https://rx.drwasifmalik.com | AI WhatsApp (booking & PA, no diagnosis, no imaging brief): https://wa.me/923000874232 (0300 087 4232) | Emergency direct Dr Wasif (not routine booking): tel:+923458254232 (0345 825 4232)
+
+Dr. Wasif Rizwan Malik | MBBS, FCPS (Neurosurgery) | PMDC 47983-P | Consultant Neurosurgeon, Faraz Hospital, Bahawalpur
