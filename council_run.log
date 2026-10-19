@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.7 STABLE
-Monday 12 October 2026 08:41 PKT
+Monday 19 October 2026 07:21 PKT
 Mode: publish
 Primary model: grok-4.5 | Claude fallback: True
 ============================================================
@@ -9,19 +9,19 @@ SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engi
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
 Dry Run: False
-Topic: Brain aneurysm: the worst headache of your life
-GROK RESEARCH (grok-4.5): Brain aneurysm: the worst headache of your life
-Grok research: 281w
+Topic: Carpal tunnel syndrome explained
+GROK RESEARCH (grok-4.5): Carpal tunnel syndrome explained
+Grok research: 221w
 GROK CONTENT: grok-4.5 attempt 1
-SUCCESS: 1401w | grok-4.5
-Generated: 1,401w
-Saved: council_output/20261012_0842_brain-aneurysm-the-worst-headache-of-you.md
-image_policy: generating featured visual for: Brain aneurysm: the worst headache of your life
-image_policy: uploaded media id=3085 (ai-featured-brain-aneurysm-the-worst-headache-of-you-1791794578.png)
+SUCCESS: 1832w | grok-4.5
+Generated: 1,832w
+Saved: council_output/20261019_0723_carpal-tunnel-syndrome-explained.md
+image_policy: generating featured visual for: Carpal tunnel syndrome explained
+image_policy: uploaded media id=3105 (ai-featured-carpal-tunnel-syndrome-explained-1792394625.png)
 WP precheck OK: HTTP 200 (attempt 1)
-WP publish success (attempt 1): https://drwasifmalik.com/brain-aneurysm-the-worst-headache-of-your-life/
+WP publish success (attempt 1): https://drwasifmalik.com/carpal-tunnel-syndrome-explained/
 Gmail sent
 Telegram sent
 ============================================================
-DONE - 1,401w | https://drwasifmalik.com/brain-aneurysm-the-worst-headache-of-your-life/ | featured=3085
+DONE - 1,832w | https://drwasifmalik.com/carpal-tunnel-syndrome-explained/ | featured=3105
 ============================================================
