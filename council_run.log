@@ -1,6 +1,6 @@
 ============================================================
 THE NEURO COUNCIL v2.7 STABLE
-Monday 19 October 2026 07:21 PKT
+Monday 26 October 2026 07:27 PKT
 Mode: publish
 Primary model: grok-4.5 | Claude fallback: True
 ============================================================
@@ -9,19 +9,22 @@ SCRIPT: /home/runner/work/drwasifmalik-council/drwasifmalik-council/council_engi
 WP_URL: https://drwasifmalik.com
 WP_USER set: True | WP_PASS set: True
 Dry Run: False
-Topic: Carpal tunnel syndrome explained
-GROK RESEARCH (grok-4.5): Carpal tunnel syndrome explained
-Grok research: 221w
+Topic: Hydrocephalus: the treatable cause of dementia
+GROK RESEARCH (grok-4.5): Hydrocephalus: the treatable cause of dementia
+Grok research: 269w
 GROK CONTENT: grok-4.5 attempt 1
-SUCCESS: 1832w | grok-4.5
-Generated: 1,832w
-Saved: council_output/20261019_0723_carpal-tunnel-syndrome-explained.md
-image_policy: generating featured visual for: Carpal tunnel syndrome explained
-image_policy: uploaded media id=3105 (ai-featured-carpal-tunnel-syndrome-explained-1792394625.png)
+SUCCESS: 1493w | grok-4.5
+Removed unverified PMID: 16192314
+Removed unverified PMID: 16192315
+Removed unverified PMID: 26224723
+Generated: 1,505w
+Saved: council_output/20261026_0728_hydrocephalus-the-treatable-cause-of-dem.md
+image_policy: generating featured visual for: Hydrocephalus: the treatable cause of dementia
+image_policy: uploaded media id=3142 (ai-featured-hydrocephalus-the-treatable-cause-of-dem-1792999725.png)
 WP precheck OK: HTTP 200 (attempt 1)
-WP publish success (attempt 1): https://drwasifmalik.com/carpal-tunnel-syndrome-explained/
+WP publish success (attempt 1): https://drwasifmalik.com/hydrocephalus-the-treatable-cause-of-dementia/
 Gmail sent
 Telegram sent
 ============================================================
-DONE - 1,832w | https://drwasifmalik.com/carpal-tunnel-syndrome-explained/ | featured=3105
+DONE - 1,505w | https://drwasifmalik.com/hydrocephalus-the-treatable-cause-of-dementia/ | featured=3142
 ============================================================
