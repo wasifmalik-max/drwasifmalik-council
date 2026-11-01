@@ -1,0 +1,18 @@
+<!-- calendar_day=31 date=2026-11-01 domain=Brain tumors uploads=1 -->
+# Cerebellar metastasis surgical indications
+
+Posterior fossa metastases behave differently from many supratentorial deposits: limited compartment volume means edema and mass effect can produce rapid brainstem compression or obstructive hydrocephalus, so timing and modality choices—resection versus stereotactic radiosurgery (SRS) alone—must be driven by mass-effect thresholds and CSF pathway risk, not size alone.
+
+## What changed / Why it matters
+Contemporary practice still rests on durable principles rather than a single new “threshold trial.” Cerebellar metastases that distort the fourth ventricle, efface cisterns, or produce progressive ataxia, nausea, or declining alertness carry a higher short-term decompensation risk than many similarly sized hemispheric lesions. Hydrocephalus may be overt (ventricular enlargement, transependymal flow) or incipient (fourth-ventricle crowding with clinical posterior-fossa signs). In that setting, microsurgical resection aims to decompress the brainstem and restore CSF flow promptly, obtain tissue when the diagnosis is uncertain or systemic options hinge on histology, and reduce steroid dependence. SRS alone remains appropriate for small, well-circumscribed deposits without meaningful mass effect, controlled extracranial disease, and acceptable performance status—especially when surgical risk is high or multiplicity favors focused radiation. Large cystic or hemorrhagic cerebellar mets, lesions abutting or compressing the brainstem with progressive deficit, and patients already failing medical control of edema are common reasons resection should **precede** or **replace** SRS as the upfront local therapy; SRS may still be used adjuvantly to the cavity when indicated. Mass-effect “thresholds” are clinical-radiologic composites—not a single centimeter cutoff: progressive focal signs, fourth-ventricle obstruction risk, and tempo of decline weigh as heavily as absolute diameter. Multidisciplinary planning (neurosurgery, radiation oncology, oncology) should sequence surgery, CSF diversion if urgently required, and radiation so that radiosurgery is not relied on to reverse established compression. Posterior fossa edema can worsen transiently after radiation; operating first when compression is already significant reduces that hazard.
+
+## Patient takeaway
+If imaging shows a cerebellar metastasis with swelling, fourth-ventricle pressure, or worsening balance, headache, or alertness, ask whether surgery is needed **before** SRS to relieve pressure and protect breathing and consciousness pathways. Small lesions without pressure effects may be suitable for SRS alone after specialist review. Seek urgent care for progressive drowsiness, severe vomiting, or sudden neurological decline—posterior fossa problems can change faster than many “above the tentorium” tumors.
+
+## Disclaimer
+This post is general educational information for patients and referring clinicians. It is not personalized medical advice, does not establish a doctor–patient relationship, and must not replace in-person assessment, imaging review, or emergency care.
+
+## CTA
+Book online: https://rx.drwasifmalik.com | AI WhatsApp (booking & PA, no diagnosis, no imaging brief): https://wa.me/923000874232 (0300 087 4232) | Emergency direct Dr Wasif (not routine booking): tel:+923458254232 (0345 825 4232)
+
+Dr. Wasif Rizwan Malik | MBBS, FCPS (Neurosurgery) | PMDC 47983-P | Consultant Neurosurgeon, Faraz Hospital, Bahawalpur.
