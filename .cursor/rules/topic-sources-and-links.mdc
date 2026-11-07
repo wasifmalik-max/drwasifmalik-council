@@ -1,0 +1,34 @@
+---
+description: Every daily neuro-news topic must cite real study links + attributed OA images + 3–5 further readings
+alwaysApply: true
+---
+
+# Topic sources, study links & authentic images (always-on)
+
+Applies to **every** 365-calendar / daily neuro-news / council digest topic on drwasifmalik.com.
+
+## Required content blocks
+1. **Primary study/source** with a real link (PubMed, PMC, DOI, journal, or reputable clinical news as appropriate). Name the study/authors/year when known.
+2. **Further reading / Study & management:** **3–5** curated links for patients and doctors — mix of peer-reviewed (PubMed/PMC/guidelines), stable textbook/chapter URLs when available, and reputable reviews/news when relevant. Prefer open-access.
+3. **Images:** Prefer **authentic clinical/radiological figures from the cited open sources** (e.g. PMC OA figures under CC-BY / CC-BY-NC) over generic Imagine clinic tropes when a suitable licensed figure exists. Always attribute: source name + link + license note. Download + upload to WP media (do not hotlink fragile CDNs long-term).
+4. If no suitable OA figure is found: use content-faithful Imagine **and still** provide real citations + further reading. Never invent DOIs/PMIDs/figure licenses.
+
+## Pattern
+Example pattern (topic-matched OA surgical/radiology paper):  
+https://pmc.ncbi.nlm.nih.gov/articles/PMC6417310/ — cite the study, link the article, attribute any reused figure (journal/authors via PMC + license).
+
+## Monolingual i18n
+- Section labels translated per EN / UR / AR; display only active `?lang=`.
+- URLs stay Latin/ASCII. Contact phones stay Western Latin digits.
+- Never bilingual stacked “Primary source · اصل ماخذ” in one HTML body.
+
+## Pipeline owners
+- Council: `daily_neuro_news.py` (citation + further-reading HTML), `image_policy.py` (PMC/OA figure prefer → Imagine fallback).
+- Homepage MU / droplet publishers must emit the same blocks monolingually into `post_content` + `_dwf_nn_body_ur` / `_dwf_nn_body_ar`.
+- **`MAX_UPLOADS_PER_DAY = 1`** unchanged — never a second calendar day the same PKT day.
+
+## Do not
+- Fabricate citations, PMIDs, DOIs, or licenses.
+- Scrape paywalled images.
+- Skip further reading when publishing a calendar brief.
+- Put doctor-face photos as featured images.

@@ -17,6 +17,7 @@ import sys
 import time
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
+from typing import Optional
 from urllib.parse import urlparse
 
 import requests
@@ -25,12 +26,18 @@ from requests.auth import HTTPBasicAuth
 from image_policy import (
     append_byline,
     append_contact_footer,
-    create_ai_featured_media,
+    create_featured_media_prefer_oa,
     resolve_author_photo_url,
     author_byline_html,
     scrub_forbidden_featured,
 )
 from topic_of_the_day import format_topic_brief, get_today_topic
+from topic_sources import (
+    append_sources_before_byline,
+    grok_resolve_sources,
+    normalize_sources,
+    render_sources_html,
+)
 
 GROK_KEY = os.environ.get("GROK_API_KEY", "")
 WP_URL = os.environ.get("WP_URL", "https://drwasifmalik.com").rstrip("/")
@@ -204,6 +211,7 @@ Rules:
 - CTA must include: {CTA}
 - Clear, professional English only in this brief (monolingual EN). Do not add Urdu or Arabic sentences here — UR/AR are generated separately into post meta.
 - Do NOT claim unpublished personal surgical outcomes.
+- Do NOT invent PMIDs/DOIs. Mention that real primary + further-reading links are attached by the publisher (do not paste fabricated URLs).
 Return full HTML-ready Markdown starting with # title."""
     return grok_chat(
         [
@@ -292,7 +300,7 @@ def ensure_category():
     return None
 
 
-def _grok_trilingual_bodies(title_en: str, md_en: str) -> dict:
+def _grok_trilingual_bodies(title_en: str, md_en: str, sources: Optional[dict] = None) -> dict:
     """Translate daily brief into separate UR + AR monolingual bodies (JSON)."""
     if not GROK_KEY or not md_en.strip():
         return {}
@@ -301,10 +309,16 @@ def _grok_trilingual_bodies(title_en: str, md_en: str) -> dict:
         "Return STRICT JSON only with keys: title_ur, title_ar, body_ur_html, body_ar_html. "
         "body_*_html = 3-6 plain <p> paragraphs, monolingual, no English mashup, no phone numeral localization "
         "(if you mention phones use Latin digits 0300 087 4232 / 0345 825 4232). "
-        "Educational tone; do not invent diagnoses or numbers."
+        "Educational tone; do not invent diagnoses or numbers. "
+        "Do not invent or rewrite URLs; the publisher attaches citation HTML separately."
     )
     user = json.dumps(
-        {"title_en": title_en, "markdown_en": md_en[:6000]},
+        {
+            "title_en": title_en,
+            "markdown_en": md_en[:6000],
+            "sources_note": "Primary + further-reading links are injected as separate monolingual HTML; translate prose only.",
+            "primary_title": ((sources or {}).get("primary") or {}).get("title") or "",
+        },
         ensure_ascii=False,
     )
     try:
@@ -474,6 +488,40 @@ def main():
         f"Calendar day {meta.get('day')} — one topic, one upload.</em></p>\n"
         f'<p><a href="https://rx.drwasifmalik.com">Book a consultation</a></p>\n'
     )
+
+    sources = {}
+    if not DRY_RUN:
+        sources = normalize_sources(
+            grok_resolve_sources(
+                meta.get("topic") or title,
+                angle=str(meta.get("angle") or ""),
+                keywords=str(meta.get("keywords") or ""),
+                feed_hint=meta.get("feed_hint"),
+            )
+        )
+        print(
+            "SOURCES: primary=",
+            bool((sources.get("primary") or {}).get("url")),
+            "further=",
+            len(sources.get("further_reading") or []),
+            "oa_fig=",
+            bool(sources.get("oa_figure")),
+        )
+
+    # ONE WordPress post only — never batch-publish calendar topics
+    featured_id = None
+    image_mode = "ai"
+    if not DRY_RUN:
+        featured_id, image_mode, sources = create_featured_media_prefer_oa(
+            title, slug_hint=title, sources=sources
+        )
+        if not featured_id:
+            print("WARN: featured image unavailable — publishing without doctor-face fallback")
+            image_mode = "none"
+
+    sources_html = render_sources_html(sources, lang="en", image_mode=image_mode if image_mode == "oa" else "ai")
+    html = append_sources_before_byline(html, sources_html)
+
     # Mini author byline (small photo + credentials) — not used as featured image
     if DRY_RUN:
         html = append_byline(html)
@@ -489,18 +537,26 @@ def main():
     )
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(header + md)
+        if sources:
+            f.write("\n\n<!-- sources_json\n" + json.dumps(sources, ensure_ascii=False, indent=2) + "\n-->\n")
     print("Wrote", out_path, f"({len(md.split())}w) | single daily upload")
 
-    # ONE WordPress post only — never batch-publish calendar topics
-    featured_id = None
-    if not DRY_RUN:
-        featured_id = create_ai_featured_media(title, slug_hint=title)
-        if not featured_id:
-            print("WARN: AI featured image unavailable — publishing without doctor-face fallback")
-
     cat_id = None if DRY_RUN else ensure_category()
-    i18n = {} if DRY_RUN else _grok_trilingual_bodies(title, md)
+    i18n = {} if DRY_RUN else _grok_trilingual_bodies(title, md, sources=sources)
     if i18n:
+        # Attach monolingual UR/AR source blocks (labels translated; URLs Latin)
+        if i18n.get("body_ur_html"):
+            i18n["body_ur_html"] = (
+                str(i18n["body_ur_html"])
+                + "\n"
+                + render_sources_html(sources, lang="ur", image_mode=image_mode if image_mode == "oa" else "ai")
+            )
+        if i18n.get("body_ar_html"):
+            i18n["body_ar_html"] = (
+                str(i18n["body_ar_html"])
+                + "\n"
+                + render_sources_html(sources, lang="ar", image_mode=image_mode if image_mode == "oa" else "ai")
+            )
         print("i18n: UR/AR bodies prepared for separate meta storage")
     result = publish(title, html, cat_id, featured_media=featured_id, i18n=i18n)
     print(

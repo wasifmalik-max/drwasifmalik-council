@@ -3,8 +3,9 @@
 Image + byline policy for Neuro Council / Daily Neurosciences News.
 
 Promotional homepage portraits stay as real/occasion media (1606, 1637, 1638).
-Article featured images must be AI medical/neuroscience visuals — never doctor
-personal photos. Each post ends with a mini author byline + small portrait.
+Article featured images prefer attributed PMC/OA clinical figures when available;
+else AI medical/neuroscience visuals — never doctor personal photos.
+Each post ends with a mini author byline + small portrait.
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ import base64
 import os
 import re
 import time
-from typing import Optional
+from typing import Any, Optional, Tuple
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -214,6 +215,197 @@ def create_ai_featured_media(topic: str, slug_hint: str = "neuro") -> Optional[i
         print(f"image_policy: refusing forbidden featured id {mid}")
         return None
     return mid
+
+
+_UA = {
+    "User-Agent": (
+        "Mozilla/5.0 (compatible; DrWasifNeuroNews/1.0; +https://drwasifmalik.com; "
+        "educational OA figure attribution)"
+    ),
+    "Accept": "text/html,application/xhtml+xml,image/jpeg,image/png,*/*;q=0.8",
+}
+
+
+def resolve_pmc_figure_cdn_url(pmcid: str, figure: str = "F1") -> Optional[str]:
+    """Resolve a PMC figure page to a cdn.ncbi.nlm.nih.gov blob JPG/PNG URL."""
+    pmcid = re.sub(r"\D", "", str(pmcid or ""))
+    fig = (figure or "F1").strip().upper()
+    if not fig.startswith("F"):
+        fig = "F" + fig
+    if not pmcid:
+        return None
+    page = f"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC{pmcid}/figure/{fig}/"
+    try:
+        r = requests.get(page, headers={**_UA, "Referer": f"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC{pmcid}/"}, timeout=45)
+        if r.status_code != 200:
+            print(f"image_policy: PMC figure page HTTP {r.status_code} for PMC{pmcid}/{fig}")
+            return None
+        m = re.search(
+            r"https://cdn\.ncbi\.nlm\.nih\.gov/pmc/blobs/[^\s\"']+\.(?:jpg|jpeg|png|gif)",
+            r.text,
+            re.I,
+        )
+        return m.group(0) if m else None
+    except Exception as exc:  # noqa: BLE001
+        print(f"image_policy: resolve_pmc_figure_cdn_url failed: {exc}")
+        return None
+
+
+def download_pmc_oa_figure(pmcid: str, figure: str = "F1") -> Optional[Tuple[bytes, str, str]]:
+    """
+    Download an open PMC figure binary. Returns (bytes, filename, cdn_url) or None.
+    Only use for OA/CC articles — caller must attribute license in caption.
+    """
+    cdn = resolve_pmc_figure_cdn_url(pmcid, figure)
+    if not cdn:
+        return None
+    try:
+        r = requests.get(
+            cdn,
+            headers={
+                **_UA,
+                "Referer": f"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC{re.sub(r'\D', '', str(pmcid))}/",
+            },
+            timeout=90,
+        )
+        if r.status_code != 200 or len(r.content) < 5000:
+            print(f"image_policy: PMC figure download failed HTTP {r.status_code} bytes={len(r.content) if r.content else 0}")
+            return None
+        ctype = (r.headers.get("Content-Type") or "").lower()
+        if "html" in ctype:
+            print("image_policy: PMC figure URL returned HTML — abort")
+            return None
+        ext = "jpg"
+        if "png" in ctype or cdn.lower().endswith(".png"):
+            ext = "png"
+        elif "gif" in ctype or cdn.lower().endswith(".gif"):
+            ext = "gif"
+        pmc_digits = re.sub(r"\D", "", str(pmcid))
+        fig = (figure or "F1").strip().upper()
+        filename = f"pmc{pmc_digits}-{fig.lower()}.{ext}"
+        print(f"image_policy: downloaded OA figure PMC{pmc_digits}/{fig} ({len(r.content)} bytes)")
+        return r.content, filename, cdn
+    except Exception as exc:  # noqa: BLE001
+        print(f"image_policy: download_pmc_oa_figure failed: {exc}")
+        return None
+
+
+def upload_wp_media_bytes(
+    image_bytes: bytes,
+    filename: str,
+    title: str,
+    alt: str,
+    caption: str = "",
+    content_type: Optional[str] = None,
+) -> Optional[int]:
+    """Upload binary with optional caption; sniff content-type from filename."""
+    if not all([WP_URL, WP_USER, WP_PASS]):
+        print("image_policy: WP credentials missing — skip media upload")
+        return None
+    ext = (filename.rsplit(".", 1)[-1] if "." in filename else "png").lower()
+    ctype = content_type or {
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "png": "image/png",
+        "gif": "image/gif",
+        "webp": "image/webp",
+    }.get(ext, "image/jpeg")
+    auth = HTTPBasicAuth(WP_USER, WP_PASS)
+    headers = {
+        "Content-Disposition": f'attachment; filename="{filename}"',
+        "Content-Type": ctype,
+    }
+    for attempt in range(1, 4):
+        try:
+            r = requests.post(
+                f"{WP_URL}/wp-json/wp/v2/media",
+                auth=auth,
+                headers=headers,
+                data=image_bytes,
+                timeout=120,
+            )
+            if r.status_code in (200, 201):
+                mid = int(r.json()["id"])
+                patch: dict[str, Any] = {"alt_text": alt, "title": title}
+                if caption:
+                    patch["caption"] = caption
+                requests.post(
+                    f"{WP_URL}/wp-json/wp/v2/media/{mid}",
+                    auth=auth,
+                    json=patch,
+                    timeout=45,
+                )
+                print(f"image_policy: uploaded media id={mid} ({filename})")
+                return mid
+            print(f"image_policy: media upload attempt {attempt} HTTP {r.status_code}: {r.text[:250]}")
+        except Exception as exc:
+            print(f"image_policy: media upload attempt {attempt} exception: {exc}")
+        time.sleep(5 * attempt)
+    return None
+
+
+def create_oa_featured_media(
+    pmcid: str,
+    figure: str = "F1",
+    topic: str = "",
+    license_note: str = "CC license via PMC",
+    article_url: str = "",
+) -> Optional[int]:
+    """Download PMC OA figure, upload to WP with attribution caption."""
+    got = download_pmc_oa_figure(pmcid, figure)
+    if not got:
+        return None
+    raw, filename, cdn = got
+    pmc_digits = re.sub(r"\D", "", str(pmcid))
+    art = article_url or f"https://pmc.ncbi.nlm.nih.gov/articles/PMC{pmc_digits}/"
+    caption = (
+        f"Source: PMC{pmc_digits} {figure} via NCBI PMC ({art}). "
+        f"License: {license_note}. Educational reuse with attribution. "
+        f"Original CDN: {cdn}"
+    )
+    alt = (
+        f"Open-access clinical figure {figure} from PMC{pmc_digits}"
+        + (f" related to {topic[:80]}" if topic else "")
+        + f". Source article: {art}. License: {license_note}."
+    )
+    title = f"PMC{pmc_digits} {figure} — {(topic or 'clinical figure')[:80]}"
+    mid = upload_wp_media_bytes(raw, filename, title, alt, caption=caption)
+    if mid and mid in FORBIDDEN_FEATURED_IDS:
+        print(f"image_policy: refusing forbidden featured id {mid}")
+        return None
+    return mid
+
+
+def create_featured_media_prefer_oa(
+    topic: str,
+    slug_hint: str = "neuro",
+    sources: Optional[dict] = None,
+) -> Tuple[Optional[int], str, dict]:
+    """
+    Prefer PMC/OA figure from sources['oa_figure']; else Imagine.
+    Returns (media_id, mode, sources) where mode is 'oa' or 'ai' or 'none'.
+    """
+    sources = sources or {}
+    fig = sources.get("oa_figure") if isinstance(sources.get("oa_figure"), dict) else {}
+    pmcid = re.sub(r"\D", "", str(fig.get("pmcid") or (sources.get("primary") or {}).get("pmcid") or ""))
+    figure = str(fig.get("figure") or "F1")
+    license_note = str(fig.get("license") or (sources.get("primary") or {}).get("license") or "Open access via PMC")
+    article_url = str(fig.get("article_url") or "")
+    if pmcid:
+        mid = create_oa_featured_media(
+            pmcid,
+            figure=figure,
+            topic=topic,
+            license_note=license_note,
+            article_url=article_url,
+        )
+        if mid:
+            return mid, "oa", sources
+        print("image_policy: OA figure unavailable — falling back to Imagine")
+    mid = create_ai_featured_media(topic, slug_hint=slug_hint)
+    if mid:
+        return mid, "ai", sources
+    return None, "none", sources
 
 
 def resolve_author_photo_url() -> str:

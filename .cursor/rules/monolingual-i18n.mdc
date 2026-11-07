@@ -13,7 +13,7 @@ alwaysApply: true
 2. **Monolingual per language:** EN in `post_content`; UR/AR in separate meta (`_dwf_nn_title_ur/_ar`, `_dwf_nn_body_ur/_ar`) when tagging frontline (`_dwf_nn_generated`).
 3. **Never** bilingual stacked HTML (no EN paragraph + Urdu companion in the same post body). No “optional Urdu sentence” inside English briefs.
 4. Site displays only `?lang=` — BBC/CNN style. UR/AR meta bodies must be **RTL**.
-5. Featured images: content-faithful clinical/neuroscience visuals via image policy — never doctor personal photo as featured.
+5. Featured images: prefer attributed PMC/OA clinical figures when available; else content-faithful Imagine via image policy — never doctor personal photo as featured. See `topic-sources-and-links.mdc` (primary citation + 3–5 further readings required every day).
 
 ## Contact footer
 - English-only footer in stored HTML (MU injects monolingual contact by lang).
